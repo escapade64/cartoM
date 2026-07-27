@@ -23,6 +23,24 @@ const POINTS = [
     thresholdMin: 2.6, // mètres
     notes: '',
   },
+  {
+    id: 'sainte-anne-express',
+    name: 'Sainte-Anne Express',
+    lat: 48.864408,
+    lon: -3.031777,
+    tideSource: 'data/tidedata.json',
+    thresholdMin: 2.8, // mètres
+    notes: '',
+  },
+  {
+    id: 'tahiti-express',
+    name: 'Tahiti Express',
+    lat: 48.866513,
+    lon: -3.03373,
+    tideSource: 'data/tidedata.json',
+    thresholdMin: 5.4, // mètres
+    notes: '',
+  },
 ];
 
 export { POINTS };
