@@ -6,13 +6,22 @@
 
 const POINTS = [
   {
-    id: 'demo-brehat',
-    name: 'Point de démo – Île de Bréhat (à adapter)',
-    lat: 48.8419,
-    lon: -2.9895,
+    id: 'mouillage-pescadou',
+    name: 'Mouillage Pescadou',
+    lat: 48.852639,
+    lon: -3.006868,
     tideSource: 'data/tidedata.json',
-    thresholdMin: 5.0, // mètres — seuil arbitraire, à remplacer par le vrai seuil du passage
-    notes: 'Point d’exemple : dupliquez cette entrée pour vos vrais points de passage.',
+    thresholdMin: 4.1, // mètres
+    notes: '',
+  },
+  {
+    id: 'kerpont',
+    name: 'Kerpont',
+    lat: 48.846582,
+    lon: -3.013984,
+    tideSource: 'data/tidedata.json',
+    thresholdMin: 2.6, // mètres
+    notes: '',
   },
 ];
 
