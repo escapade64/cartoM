@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>CartoM – Points de passage à marée</title>
+  <meta name="description" content="Carte des points de passage nautiques, ouverts ou fermés selon la marée." />
+  <meta name="theme-color" content="#0b5566" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>Points de passage à marée</h1>
+    <p id="last-update" class="last-update"></p>
+  </header>
+
+  <div id="data-warning" class="data-warning" hidden></div>
+
+  <div id="map"></div>
+
+  <div class="legend">
+    <div><span class="dot" style="background:#1e8e3e"></span> Ouvert (assez d'eau)</div>
+    <div><span class="dot" style="background:#d93025"></span> Fermé (pas assez d'eau)</div>
+    <div><span class="dot" style="background:#9aa0a6"></span> Donnée indisponible</div>
+  </div>
+
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

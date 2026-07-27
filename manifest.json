@@ -1,0 +1,13 @@
+{
+  "name": "CartoM – Points de passage à marée",
+  "short_name": "CartoM Marées",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b5566",
+  "theme_color": "#0b5566",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
