@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CartoM – Édition des points</title>
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
+  <link rel="stylesheet" href="css/edit.css" />
+</head>
+<body>
+  <header class="edit-header">
+    <h1>Édition des points de passage</h1>
+    <p>Clique sur la carte pour ajouter un point (ou fais glisser un marqueur existant pour l'ajuster). Remplis le nom et la hauteur d'eau requise dans le tableau, puis exporte pour récupérer le contenu de <code>points.js</code>.</p>
+  </header>
+
+  <div class="edit-layout">
+    <div id="map"></div>
+    <div class="table-panel">
+      <table id="points-table">
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+            <th>Seuil (m)</th>
+            <th>Notes</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="points-tbody"></tbody>
+      </table>
+      <button id="export-btn" type="button">Exporter points.js</button>
+    </div>
+  </div>
+
+  <div id="export-panel" class="export-panel" hidden>
+    <div class="export-actions">
+      <button id="copy-btn" type="button">Copier</button>
+      <a id="download-link" class="download-btn" download="points.js">Télécharger points.js</a>
+      <button id="close-export-btn" type="button">Fermer</button>
+    </div>
+    <textarea id="export-text" readonly spellcheck="false"></textarea>
+  </div>
+
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script type="module" src="js/edit.js"></script>
+</body>
+</html>
