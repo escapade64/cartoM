@@ -1,5 +1,7 @@
 import { POINTS } from './points.js';
-import { loadTideSeries, statusAt, nextTransitions, dataRangeEndsWithin } from './tide.js';
+import { loadTideSeries, heightAt, statusAt, nextTransitions, dataRangeEndsWithin } from './tide.js';
+
+const BREHAT_TIDE_SOURCE = 'data/tidedata.json';
 
 const REFRESH_MS = 60 * 1000;
 const dateFmt = new Intl.DateTimeFormat('fr-FR', {
@@ -85,6 +87,8 @@ async function init() {
     })
   );
 
+  const brehatSeries = await loadTideSeries(BREHAT_TIDE_SOURCE);
+
   const markers = new Map();
   for (const point of POINTS) {
     const marker = L.circleMarker([point.lat, point.lon], {
@@ -100,6 +104,10 @@ async function init() {
   function refresh() {
     const now = Date.now();
     let earliestWarningDays = null;
+
+    const brehatHeight = heightAt(brehatSeries, now);
+    document.getElementById('current-tide').textContent =
+      brehatHeight === null ? '' : `· ${brehatHeight.toFixed(2)} m`;
 
     for (const point of POINTS) {
       const series = seriesByPoint.get(point.id);
