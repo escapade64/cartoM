@@ -1,4 +1,9 @@
-const CACHE_NAME = 'cartom-shell-v3';
+const CACHE_NAME = 'cartom-shell-v5';
+// Cache séparé et non versionné avec le shell : les tuiles orthophoto (millésime
+// 2011-2014, fixe) ne changent jamais, donc pas besoin de les invalider à chaque
+// déploiement de l'app.
+const ORTHO_CACHE_NAME = 'cartom-ortho-tiles-v1';
+const ORTHO_HOSTNAME = 'geolittoral.din.developpement-durable.gouv.fr';
 
 const PRECACHE_URLS = [
   './',
@@ -27,28 +32,32 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
+  const keep = new Set([CACHE_NAME, ORTHO_CACHE_NAME]);
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => !keep.has(k)).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
 
-// Cache-first pour les ressources de l'app (même origine). Les tuiles de carte
-// (OSM/OpenSeaMap, autre origine) passent directement par le réseau : elles ne
-// sont pas mises en cache, une connexion est nécessaire pour afficher le fond de carte.
+// Cache-first pour les ressources de l'app (même origine) et pour les tuiles
+// orthophoto marée basse (millésime fixe, jamais périmé). Les autres tuiles de
+// carte (OSM/OpenSeaMap, autre origine) passent directement par le réseau : une
+// connexion est nécessaire pour afficher ces fonds de carte.
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
-  if (url.origin !== self.location.origin) return;
+  const isOrtho = url.hostname === ORTHO_HOSTNAME;
+  if (url.origin !== self.location.origin && !isOrtho) return;
 
+  const cacheName = isOrtho ? ORTHO_CACHE_NAME : CACHE_NAME;
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) return cached;
       return fetch(event.request).then((response) => {
         if (response.ok) {
           const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          caches.open(cacheName).then((cache) => cache.put(event.request, clone));
         }
         return response;
       });

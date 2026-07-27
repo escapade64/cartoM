@@ -68,12 +68,26 @@ async function init() {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(map);
 
+  // Photos aériennes prises à marée basse (2011-2014), utile pour voir l'estran découvert.
+  const ortholittorale = L.tileLayer.wms('https://geolittoral.din.developpement-durable.gouv.fr/wxs', {
+    layers: 'ortholittorale_v2_rvb',
+    format: 'image/png',
+    version: '1.3.0',
+    maxZoom: 19,
+    attribution: 'GéoLittoral / SHOM-IGN — orthophotos littorales 2011-2014 (marée basse)',
+  });
+
   const seamarks = L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
     maxZoom: 18,
     attribution: '&copy; <a href="https://www.openseamap.org">OpenSeaMap</a>',
   });
 
-  L.control.layers(null, { 'Balisage marin (OpenSeaMap)': seamarks }).addTo(map);
+  L.control
+    .layers(
+      { 'Plan (OpenStreetMap)': osm, 'Photos aériennes à marée basse (2011-2014)': ortholittorale },
+      { 'Balisage marin (OpenSeaMap)': seamarks }
+    )
+    .addTo(map);
 
   const bounds = L.latLngBounds(POINTS.map((p) => [p.lat, p.lon]));
   map.fitBounds(bounds.pad(0.4), { maxZoom: 13 });
