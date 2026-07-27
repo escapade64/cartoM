@@ -60,6 +60,66 @@ function showDataWarning(message) {
   el.textContent = message;
 }
 
+// Bouton "centrer sur ma position", basé sur l'API de géolocalisation native de
+// Leaflet (map.locate) — pas de dépendance externe.
+function addLocateControl(map) {
+  let marker = null;
+  let accuracyCircle = null;
+
+  const LocateControl = L.Control.extend({
+    options: { position: 'bottomright' },
+    onAdd() {
+      const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-locate');
+      const link = L.DomUtil.create('a', 'leaflet-control-locate-btn', container);
+      link.href = '#';
+      link.title = 'Centrer sur ma position';
+      link.setAttribute('role', 'button');
+      link.setAttribute('aria-label', 'Centrer sur ma position');
+      link.innerHTML =
+        '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 2a1 1 0 0 1 1 1v1.06A8.01 8.01 0 0 1 19.94 11H21a1 1 0 1 1 0 2h-1.06A8.01 8.01 0 0 1 13 19.94V21a1 1 0 1 1-2 0v-1.06A8.01 8.01 0 0 1 4.06 13H3a1 1 0 1 1 0-2h1.06A8.01 8.01 0 0 1 11 4.06V3a1 1 0 0 1 1-1zm0 4a6 6 0 1 0 0 12 6 6 0 0 0 0-12zm0 3.5A2.5 2.5 0 1 1 9.5 12 2.5 2.5 0 0 1 12 9.5z"/></svg>';
+
+      L.DomEvent.disableClickPropagation(container);
+      L.DomEvent.on(link, 'click', (e) => {
+        L.DomEvent.stop(e);
+        container.classList.add('locating');
+        map.locate({ setView: true, maxZoom: 16, enableHighAccuracy: true });
+      });
+
+      return container;
+    },
+  });
+
+  map.addControl(new LocateControl());
+
+  map.on('locationfound', (e) => {
+    document.querySelector('.leaflet-control-locate')?.classList.remove('locating');
+    if (marker) {
+      marker.setLatLng(e.latlng);
+      accuracyCircle.setLatLng(e.latlng).setRadius(e.accuracy);
+    } else {
+      marker = L.circleMarker(e.latlng, {
+        radius: 7,
+        weight: 2,
+        color: '#ffffff',
+        fillColor: '#1a73e8',
+        fillOpacity: 1,
+      }).addTo(map);
+      accuracyCircle = L.circle(e.latlng, {
+        radius: e.accuracy,
+        weight: 1,
+        color: '#1a73e8',
+        fillColor: '#1a73e8',
+        fillOpacity: 0.12,
+      }).addTo(map);
+    }
+  });
+
+  map.on('locationerror', (e) => {
+    document.querySelector('.leaflet-control-locate')?.classList.remove('locating');
+    alert(`Impossible d'obtenir votre position : ${e.message}`);
+  });
+}
+
 async function init() {
   const map = L.map('map', { zoomControl: true });
 
@@ -88,6 +148,8 @@ async function init() {
       { 'Balisage marin (OpenSeaMap)': seamarks }
     )
     .addTo(map);
+
+  addLocateControl(map);
 
   const bounds = L.latLngBounds(POINTS.map((p) => [p.lat, p.lon]));
   map.fitBounds(bounds.pad(0.4), { maxZoom: 13 });

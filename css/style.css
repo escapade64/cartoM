@@ -68,6 +68,21 @@ body {
   margin-right: 0.3rem;
 }
 
+.leaflet-control-locate-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.leaflet-control-locate.locating .leaflet-control-locate-btn {
+  color: #1a73e8;
+  animation: locate-pulse 1s ease-in-out infinite;
+}
+
+@keyframes locate-pulse {
+  50% { opacity: 0.35; }
+}
+
 .popup h3 {
   margin: 0 0 0.35rem;
   font-size: 0.95rem;
