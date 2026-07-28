@@ -19,6 +19,29 @@ function formatTime(ms) {
   return dateFmt.format(new Date(ms));
 }
 
+const timeFmtShort = new Intl.DateTimeFormat('fr-FR', {
+  timeZone: 'Europe/Paris',
+  hour: '2-digit',
+  minute: '2-digit',
+});
+
+function formatTimeShort(ms) {
+  return timeFmtShort.format(new Date(ms));
+}
+
+// Affiche/masque l'étiquette d'horaire à côté d'un marqueur de seuil (vide = masquée).
+function setPointLabel(marker, html) {
+  if (!html) {
+    if (marker.getTooltip()) marker.unbindTooltip();
+    return;
+  }
+  if (marker.getTooltip()) {
+    marker.setTooltipContent(html);
+  } else {
+    marker.bindTooltip(html, { permanent: true, direction: 'right', offset: [14, 0], className: 'point-label' });
+  }
+}
+
 const STATUS_COLOR = { open: '#1e8e3e', closed: '#d93025', unknown: '#9aa0a6' };
 const STATUS_LABEL = { open: 'Ouvert', closed: 'Fermé', unknown: 'Données indisponibles' };
 
@@ -260,6 +283,18 @@ async function init() {
     markers.set(point.id, marker);
   }
 
+  // Taille des marqueurs de seuil proportionnelle au zoom.
+  const POINT_RADIUS_MIN_ZOOM = 11;
+  const POINT_RADIUS_MAX_ZOOM = 17;
+  function updatePointRadius() {
+    const zoom = map.getZoom();
+    const t = Math.min(1, Math.max(0, (zoom - POINT_RADIUS_MIN_ZOOM) / (POINT_RADIUS_MAX_ZOOM - POINT_RADIUS_MIN_ZOOM)));
+    const radius = 5 + t * (11 - 5);
+    for (const marker of markers.values()) marker.setRadius(radius);
+  }
+  map.on('zoomend', updatePointRadius);
+  updatePointRadius();
+
   function refresh() {
     const now = Date.now();
     let earliestWarningDays = null;
@@ -276,6 +311,15 @@ async function init() {
       const marker = markers.get(point.id);
       marker.setStyle({ fillColor: STATUS_COLOR[status] });
       marker.setPopupContent(buildPopupHtml(point, { status, height, transitions }));
+
+      const nextChange = transitions[0];
+      if (nextChange) {
+        const arrow = nextChange.becomes === 'open' ? '↑' : '↓';
+        const labelClass = nextChange.becomes === 'open' ? 'label-open' : 'label-closed';
+        setPointLabel(marker, `<span class="${labelClass}">${arrow} ${formatTimeShort(nextChange.time)}</span>`);
+      } else {
+        setPointLabel(marker, '');
+      }
 
       if (dataRangeEndsWithin(series, now, 7)) {
         const lastTs = series[series.length - 1][0];
