@@ -102,6 +102,51 @@ const POINTS = [
     thresholdMin: 7.5, // mètres
     notes: "Hauteur estimée",
   },
+  {
+    id: 'kervarec-express',
+    name: "Kervarec express",
+    lat: 48.854609094739104,
+    lon: -3.0137141722099057,
+    tideSource: "data/tidedata.json",
+    thresholdMin: 2.45, // mètres
+    notes: "",
+  },
+  {
+    id: 'milieu-express',
+    name: "Milieu express",
+    lat: 48.85164890780442,
+    lon: -3.022919478987323,
+    tideSource: "data/tidedata.json",
+    thresholdMin: 2.54, // mètres
+    notes: "Beaucoup de courant",
+  },
+  {
+    id: 'chien-vers-trieux',
+    name: "Chien vers Trieux",
+    lat: 48.848898277916625,
+    lon: -3.0237189539224967,
+    tideSource: "data/tidedata.json",
+    thresholdMin: 1.9, // mètres
+    notes: "",
+  },
+  {
+    id: 'daddy-express',
+    name: "Daddy Express",
+    lat: 48.848573342662576,
+    lon: -3.027451697947152,
+    tideSource: "data/tidedata.json",
+    thresholdMin: 2.7, // mètres
+    notes: "Parc à huitres",
+  },
+  {
+    id: 'phoque-express',
+    name: "Phoque express",
+    lat: 48.84983068911272,
+    lon: -3.027167451634925,
+    tideSource: "data/tidedata.json",
+    thresholdMin: 2.45, // mètres
+    notes: "",
+  },
 ];
 
 export { POINTS };
