@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cartom-shell-v8';
+const CACHE_NAME = 'cartom-shell-v9';
 // Cache séparé et non versionné avec le shell : les tuiles orthophoto (millésime
 // 2011-2014, fixe) ne changent jamais, donc pas besoin de les invalider à chaque
 // déploiement de l'app.

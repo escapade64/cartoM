@@ -184,67 +184,7 @@ function createRow(point, { focusName = false } = {}) {
   if (focusName) nameInput.focus();
 }
 
-// Candidats extraits du KML "Bréhat" (dossier Navigation) — à valider/ajuster
-// puis supprimer de cette liste une fois exportés dans points.js.
-const KML_IMPORT_CANDIDATES = [
-  { name: 'Nord Maudez seuil 7,70m', lat: 48.8647564, lon: -3.037588, thresholdMin: 7.7, notes: '' },
-  { name: 'Nord Maudez seuil 8m', lat: 48.8647706, lon: -3.038981, thresholdMin: 8.0, notes: '' },
-  { name: 'Ouest Maudez 6m', lat: 48.8613293, lon: -3.0462761, thresholdMin: 6.0, notes: '' },
-  {
-    name: 'Tahiti express 5m40 (KML)',
-    lat: 48.8666592,
-    lon: -3.0337049,
-    thresholdMin: 5.4,
-    notes: 'Doublon possible de Tahiti Express déjà existant — comparer',
-  },
-  {
-    name: 'Kerpont 2m60 (KML)',
-    lat: 48.8471952,
-    lon: -3.0145399,
-    thresholdMin: 2.6,
-    notes: 'Doublon possible de Kerpont déjà existant (~70m d’écart) — comparer',
-  },
-  {
-    name: 'Beniguet 4m20',
-    lat: 48.8457761,
-    lon: -3.0215696,
-    thresholdMin: 4.2,
-    notes: 'Permet de contourner le Kerpont à marée haute',
-  },
-  {
-    name: 'Seuil Morbic',
-    lat: 48.8603269,
-    lon: -2.9847506,
-    thresholdMin: 0,
-    notes: '⚠ hauteur non précisée dans le KML — à compléter',
-  },
-  {
-    name: 'Sortie baie Sainte Anne 2m80 (KML)',
-    lat: 48.864376,
-    lon: -3.0315962,
-    thresholdMin: 2.8,
-    notes: 'Doublon possible de Sainte-Anne Express déjà existant — comparer',
-  },
-  {
-    name: 'Point bas cale environ 2m60',
-    lat: 48.8238911,
-    lon: -3.0121605,
-    thresholdMin: 2.6,
-    notes: '⚠ loin au sud des autres points — vérifier si c’est bien Bréhat',
-  },
-  {
-    name: 'Cale des Héaux de Bréhat',
-    lat: 48.9083073,
-    lon: -3.0860267,
-    thresholdMin: 7.5,
-    notes: 'Hauteur estimée (KML) — site isolé au nord',
-  },
-];
-
 for (const point of POINTS) {
-  createRow(point);
-}
-for (const point of KML_IMPORT_CANDIDATES) {
   createRow(point);
 }
 fitToRows();
