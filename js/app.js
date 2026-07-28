@@ -4,6 +4,7 @@ import { ROCKS } from './rocks.js';
 import { loadTideSeries, heightAt, statusAt, nextTransitions, dataRangeEndsWithin } from './tide.js';
 
 const BREHAT_TIDE_SOURCE = 'data/tidedata.json';
+const BOAT_DRAFT_M = 0.3; // tirant d'eau du bateau, ajouté au seuil requis de chaque point
 
 const REFRESH_MS = 60 * 1000;
 const dateFmt = new Intl.DateTimeFormat('fr-FR', {
@@ -43,7 +44,7 @@ function buildPopupHtml(point, info) {
         ● ${STATUS_LABEL[status]}
       </div>
       <div>Hauteur d'eau actuelle : <strong>${heightTxt}</strong></div>
-      <div>Seuil requis : <strong>${point.thresholdMin.toFixed(2)} m</strong></div>
+      <div>Seuil requis : <strong>${point.thresholdMin.toFixed(2)} m + ${BOAT_DRAFT_M.toFixed(2)} m</strong> (tirant d'eau)</div>
       ${transitionsHtml}
       ${point.notes ? `<div class="notes">${point.notes}</div>` : ''}
     </div>
@@ -233,8 +234,9 @@ async function init() {
 
     for (const point of POINTS) {
       const series = seriesByPoint.get(point.id);
-      const { status, height } = statusAt(series, now, point.thresholdMin);
-      const transitions = status === 'unknown' ? [] : nextTransitions(series, now, point.thresholdMin, 2);
+      const effectiveThreshold = point.thresholdMin + BOAT_DRAFT_M;
+      const { status, height } = statusAt(series, now, effectiveThreshold);
+      const transitions = status === 'unknown' ? [] : nextTransitions(series, now, effectiveThreshold, 2);
       const marker = markers.get(point.id);
       marker.setStyle({ fillColor: STATUS_COLOR[status] });
       marker.setPopupContent(buildPopupHtml(point, { status, height, transitions }));

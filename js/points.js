@@ -64,7 +64,7 @@ const POINTS = [
     lon: -3.0145399,
     tideSource: "data/tidedata.json",
     thresholdMin: 2.6, // mètres
-    notes: "Doublon possible de Kerpont déjà existant (~70m d’écart) — comparer",
+    notes: "le seuil est assez étendu vers le Sud",
   },
   {
     id: 'beniguet',
@@ -91,7 +91,7 @@ const POINTS = [
     lon: -3.0121605,
     tideSource: "data/tidedata.json",
     thresholdMin: 2.6, // mètres
-    notes: "⚠ loin au sud des autres points — vérifier si c’est bien Bréhat",
+    notes: "permet de remonter le long de la cale mieux que les vedettes",
   },
   {
     id: 'cale-des-heaux-de-brehat',
@@ -100,7 +100,7 @@ const POINTS = [
     lon: -3.0860267,
     tideSource: "data/tidedata.json",
     thresholdMin: 7.5, // mètres
-    notes: "Hauteur estimée (KML) — site isolé au nord",
+    notes: "Hauteur estimée",
   },
 ];
 
