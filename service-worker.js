@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cartom-shell-v9';
+const CACHE_NAME = 'cartom-shell-v11';
 // Cache séparé et non versionné avec le shell : les tuiles orthophoto (millésime
 // 2011-2014, fixe) ne changent jamais, donc pas besoin de les invalider à chaque
 // déploiement de l'app.
@@ -12,6 +12,7 @@ const PRECACHE_URLS = [
   './css/style.css',
   './js/app.js',
   './js/tide.js',
+  './js/navlines.js',
   './js/points.js',
   './data/tidedata.json',
   './vendor/leaflet/leaflet.js',

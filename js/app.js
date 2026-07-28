@@ -1,4 +1,5 @@
 import { POINTS } from './points.js';
+import { NAV_LINES } from './navlines.js';
 import { loadTideSeries, heightAt, statusAt, nextTransitions, dataRangeEndsWithin } from './tide.js';
 
 const BREHAT_TIDE_SOURCE = 'data/tidedata.json';
@@ -148,6 +149,19 @@ async function init() {
       { 'Balisage marin (OpenSeaMap)': seamarks }
     )
     .addTo(map);
+
+  // Tracés de navigation issus d'un relevé terrain (chenaux, passages, contournements).
+  // Affichés par défaut, pas dans le sélecteur de calques.
+  for (const line of NAV_LINES) {
+    const polyline = L.polyline(line.path, {
+      color: '#f4511e',
+      weight: 3,
+      opacity: 0.85,
+      dashArray: '6 4',
+    }).addTo(map);
+    const label = line.notes ? `<strong>${line.name}</strong><br>${line.notes}` : `<strong>${line.name}</strong>`;
+    polyline.bindTooltip(label, { sticky: true });
+  }
 
   addLocateControl(map);
 
