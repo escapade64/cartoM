@@ -2,7 +2,7 @@ import { POINTS } from './points.js';
 import { NAV_LINES } from './navlines.js';
 import { ROCKS } from './rocks.js';
 import { LANDMARKS, DANGER_ZONES } from './landmarks.js';
-import { loadTideSeries, heightAt, statusAt, nextTransitions, dataRangeEndsWithin } from './tide.js';
+import { loadTideSeries, tideState, statusAt, nextTransitions, dataRangeEndsWithin } from './tide.js';
 
 const BREHAT_TIDE_SOURCE = 'data/tidedata.json';
 const BOAT_DRAFT_M = 0.3; // tirant d'eau du bateau, ajouté au seuil requis de chaque point
@@ -256,8 +256,13 @@ async function init() {
 
   addLocateControl(map);
 
-  const bounds = L.latLngBounds(POINTS.map((p) => [p.lat, p.lon]));
-  map.fitBounds(bounds.pad(0.4), { maxZoom: 13 });
+  const initialPoint = POINTS.find((p) => p.id === 'mouillage-pescadou');
+  if (initialPoint) {
+    map.setView([initialPoint.lat, initialPoint.lon], 15);
+  } else {
+    const bounds = L.latLngBounds(POINTS.map((p) => [p.lat, p.lon]));
+    map.fitBounds(bounds.pad(0.4), { maxZoom: 13 });
+  }
   updateMapLabelScale();
 
   // Charge une seule fois chaque fichier de données de marée référencé (partagé entre points).
@@ -299,9 +304,19 @@ async function init() {
     const now = Date.now();
     let earliestWarningDays = null;
 
-    const brehatHeight = heightAt(brehatSeries, now);
-    document.getElementById('current-tide').textContent =
-      brehatHeight === null ? '' : `· ${brehatHeight.toFixed(2)} m`;
+    const brehat = tideState(brehatSeries, now);
+    const currentTideEl = document.getElementById('current-tide');
+    if (brehat.height === null) {
+      currentTideEl.innerHTML = '';
+    } else {
+      const arrow = brehat.direction === 'rising' ? '↗' : '↘';
+      const directionLabel = brehat.direction === 'rising' ? 'montante' : 'descendante';
+      const nextLabel = brehat.direction === 'rising' ? 'PM' : 'BM';
+      const nextTimeTxt = brehat.nextExtremum ? formatTimeShort(brehat.nextExtremum.time) : '—';
+      currentTideEl.innerHTML =
+        `· ${brehat.height.toFixed(2)} m ` +
+        `<span class="tide-extra">${arrow} ${directionLabel} · ${nextLabel} ${nextTimeTxt}</span>`;
+    }
 
     for (const point of POINTS) {
       const series = seriesByPoint.get(point.id);

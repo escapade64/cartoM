@@ -46,6 +46,23 @@ function heightAt(series, t) {
   return cosineHeight(t1, h1, t2, h2, t);
 }
 
+// État complet de la marée à l'instant t : hauteur, sens (montante/descendante)
+// et prochain extremum (heure + hauteur de la prochaine pleine/basse mer).
+// Retourne des valeurs null si t est hors de la plage de données.
+function tideState(series, t) {
+  const i = findSegment(series, t);
+  if (i === -1 || i === series.length - 1) {
+    return { height: null, direction: null, nextExtremum: null };
+  }
+  const [t1, h1] = series[i];
+  const [t2, h2] = series[i + 1];
+  return {
+    height: cosineHeight(t1, h1, t2, h2, t),
+    direction: h2 > h1 ? 'rising' : 'falling',
+    nextExtremum: { time: t2, height: h2 },
+  };
+}
+
 // Statut au seuil donné : "open" (>= seuil), "closed" (< seuil), ou "unknown" (hors plage).
 function statusAt(series, t, thresholdMin) {
   const h = heightAt(series, t);
@@ -88,4 +105,4 @@ function dataRangeEndsWithin(series, t, days) {
   return lastTs - t < days * 24 * 3600 * 1000;
 }
 
-export { loadTideSeries, heightAt, statusAt, nextTransitions, dataRangeEndsWithin };
+export { loadTideSeries, heightAt, tideState, statusAt, nextTransitions, dataRangeEndsWithin };
