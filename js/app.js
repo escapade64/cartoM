@@ -1,5 +1,6 @@
 import { POINTS } from './points.js';
 import { NAV_LINES } from './navlines.js';
+import { ROCKS } from './rocks.js';
 import { loadTideSeries, heightAt, statusAt, nextTransitions, dataRangeEndsWithin } from './tide.js';
 
 const BREHAT_TIDE_SOURCE = 'data/tidedata.json';
@@ -163,10 +164,41 @@ async function init() {
     polyline.bindTooltip(label, { sticky: true });
   }
 
+  // Rochers repérés, avec leur nom affiché en permanence sur la carte.
+  for (const rock of ROCKS) {
+    const marker = L.circleMarker([rock.lat, rock.lon], {
+      radius: 4,
+      weight: 1,
+      color: '#5f4b32',
+      fillColor: '#8d7355',
+      fillOpacity: 1,
+    }).addTo(map);
+    marker.bindTooltip(rock.name, { permanent: true, direction: 'top', offset: [0, -4], className: 'rock-label' });
+  }
+
+  // Taille des noms de rochers proportionnelle au zoom : invisibles dézoomé,
+  // lisibles en approchant.
+  const ROCK_LABEL_MIN_ZOOM = 13;
+  const ROCK_LABEL_MAX_ZOOM = 18;
+  function updateRockLabelScale() {
+    const zoom = map.getZoom();
+    if (zoom <= ROCK_LABEL_MIN_ZOOM) {
+      document.documentElement.style.setProperty('--rock-label-size', '0rem');
+      document.documentElement.style.setProperty('--rock-label-opacity', '0');
+      return;
+    }
+    const t = Math.min(1, (zoom - ROCK_LABEL_MIN_ZOOM) / (ROCK_LABEL_MAX_ZOOM - ROCK_LABEL_MIN_ZOOM));
+    const size = 0.55 + t * (0.95 - 0.55);
+    document.documentElement.style.setProperty('--rock-label-size', `${size.toFixed(2)}rem`);
+    document.documentElement.style.setProperty('--rock-label-opacity', '1');
+  }
+  map.on('zoomend', updateRockLabelScale);
+
   addLocateControl(map);
 
   const bounds = L.latLngBounds(POINTS.map((p) => [p.lat, p.lon]));
   map.fitBounds(bounds.pad(0.4), { maxZoom: 13 });
+  updateRockLabelScale();
 
   // Charge une seule fois chaque fichier de données de marée référencé (partagé entre points).
   const seriesByPoint = new Map();
