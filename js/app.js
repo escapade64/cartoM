@@ -1,6 +1,7 @@
 import { POINTS } from './points.js';
 import { NAV_LINES } from './navlines.js';
 import { ROCKS } from './rocks.js';
+import { LANDMARKS, DANGER_ZONES } from './landmarks.js';
 import { loadTideSeries, heightAt, statusAt, nextTransitions, dataRangeEndsWithin } from './tide.js';
 
 const BREHAT_TIDE_SOURCE = 'data/tidedata.json';
@@ -174,32 +175,67 @@ async function init() {
       fillColor: '#8d7355',
       fillOpacity: 1,
     }).addTo(map);
-    marker.bindTooltip(rock.name, { permanent: true, direction: 'top', offset: [0, -4], className: 'rock-label' });
+    marker.bindTooltip(rock.name, {
+      permanent: true,
+      direction: 'top',
+      offset: [0, -4],
+      className: 'map-label rock-label',
+    });
   }
 
-  // Taille des noms de rochers proportionnelle au zoom : invisibles dézoomé,
-  // lisibles en approchant.
-  const ROCK_LABEL_MIN_ZOOM = 13;
-  const ROCK_LABEL_MAX_ZOOM = 18;
-  function updateRockLabelScale() {
+  // Points de repère (plages, mouillages, lieux-dits).
+  for (const landmark of LANDMARKS) {
+    const marker = L.circleMarker([landmark.lat, landmark.lon], {
+      radius: 5,
+      weight: 1,
+      color: '#0b5566',
+      fillColor: '#3a8fa3',
+      fillOpacity: 1,
+    }).addTo(map);
+    marker.bindTooltip(landmark.name, {
+      permanent: true,
+      direction: 'top',
+      offset: [0, -5],
+      className: 'map-label landmark-label',
+    });
+    if (landmark.notes) marker.bindPopup(`<strong>${landmark.name}</strong><br>${landmark.notes}`);
+  }
+
+  // Zones de danger.
+  for (const zone of DANGER_ZONES) {
+    L.polygon(zone.path, {
+      color: '#d93025',
+      weight: 2,
+      fillColor: '#d93025',
+      fillOpacity: 0.25,
+    })
+      .addTo(map)
+      .bindTooltip(zone.name, { sticky: true });
+  }
+
+  // Taille des étiquettes (rochers, points de repère) proportionnelle au zoom :
+  // invisibles dézoomé, lisibles en approchant.
+  const MAP_LABEL_MIN_ZOOM = 13;
+  const MAP_LABEL_MAX_ZOOM = 18;
+  function updateMapLabelScale() {
     const zoom = map.getZoom();
-    if (zoom <= ROCK_LABEL_MIN_ZOOM) {
-      document.documentElement.style.setProperty('--rock-label-size', '0rem');
-      document.documentElement.style.setProperty('--rock-label-opacity', '0');
+    if (zoom <= MAP_LABEL_MIN_ZOOM) {
+      document.documentElement.style.setProperty('--map-label-size', '0rem');
+      document.documentElement.style.setProperty('--map-label-opacity', '0');
       return;
     }
-    const t = Math.min(1, (zoom - ROCK_LABEL_MIN_ZOOM) / (ROCK_LABEL_MAX_ZOOM - ROCK_LABEL_MIN_ZOOM));
+    const t = Math.min(1, (zoom - MAP_LABEL_MIN_ZOOM) / (MAP_LABEL_MAX_ZOOM - MAP_LABEL_MIN_ZOOM));
     const size = 0.55 + t * (0.95 - 0.55);
-    document.documentElement.style.setProperty('--rock-label-size', `${size.toFixed(2)}rem`);
-    document.documentElement.style.setProperty('--rock-label-opacity', '1');
+    document.documentElement.style.setProperty('--map-label-size', `${size.toFixed(2)}rem`);
+    document.documentElement.style.setProperty('--map-label-opacity', '1');
   }
-  map.on('zoomend', updateRockLabelScale);
+  map.on('zoomend', updateMapLabelScale);
 
   addLocateControl(map);
 
   const bounds = L.latLngBounds(POINTS.map((p) => [p.lat, p.lon]));
   map.fitBounds(bounds.pad(0.4), { maxZoom: 13 });
-  updateRockLabelScale();
+  updateMapLabelScale();
 
   // Charge une seule fois chaque fichier de données de marée référencé (partagé entre points).
   const seriesByPoint = new Map();

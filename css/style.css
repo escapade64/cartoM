@@ -64,27 +64,40 @@ body {
   50% { opacity: 0.35; }
 }
 
-.rock-label {
+.map-label {
   background: transparent;
   border: none;
   box-shadow: none;
   padding: 0;
-  font-size: var(--rock-label-size, 0.7rem);
-  opacity: var(--rock-label-opacity, 1);
-  color: #5f4b32;
+  font-size: var(--map-label-size, 0.7rem);
+  opacity: var(--map-label-opacity, 1);
   text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 3px #fff;
   transition: font-size 0.15s ease, opacity 0.15s ease;
   pointer-events: none;
 }
 
-.rock-label::before {
+.map-label::before {
   display: none;
 }
 
+.rock-label {
+  color: #5f4b32;
+}
+
+.landmark-label {
+  color: #0b5566;
+  font-weight: 600;
+}
+
 @media (prefers-color-scheme: dark) {
+  .map-label {
+    text-shadow: 0 0 3px #202124, 0 0 3px #202124, 0 0 3px #202124;
+  }
   .rock-label {
     color: #c9b696;
-    text-shadow: 0 0 3px #202124, 0 0 3px #202124, 0 0 3px #202124;
+  }
+  .landmark-label {
+    color: #6fc3d9;
   }
 }
 
