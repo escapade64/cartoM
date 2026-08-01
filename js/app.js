@@ -236,23 +236,47 @@ async function init() {
       .bindTooltip(zone.name, { sticky: true });
   }
 
-  // Taille des étiquettes (rochers, points de repère) proportionnelle au zoom :
-  // invisibles dézoomé, lisibles en approchant.
-  const MAP_LABEL_MIN_ZOOM = 13;
-  const MAP_LABEL_MAX_ZOOM = 18;
-  function updateMapLabelScale() {
-    const zoom = map.getZoom();
-    if (zoom <= MAP_LABEL_MIN_ZOOM) {
-      document.documentElement.style.setProperty('--map-label-size', '0rem');
-      document.documentElement.style.setProperty('--map-label-opacity', '0');
-      return;
+  // Affiche/agrandit une catégorie d'étiquettes selon le zoom : masquée en
+  // dessous de minZoom, taille interpolée entre minSize et maxSize au-delà.
+  function bindZoomScaledLabels(sizeVar, opacityVar, { minZoom, maxZoom, minSize = 0.55, maxSize = 0.95 }) {
+    function update() {
+      const zoom = map.getZoom();
+      if (zoom < minZoom) {
+        document.documentElement.style.setProperty(sizeVar, '0rem');
+        document.documentElement.style.setProperty(opacityVar, '0');
+        return;
+      }
+      const t = Math.min(1, (zoom - minZoom) / (maxZoom - minZoom));
+      const size = minSize + t * (maxSize - minSize);
+      document.documentElement.style.setProperty(sizeVar, `${size.toFixed(2)}rem`);
+      document.documentElement.style.setProperty(opacityVar, '1');
     }
-    const t = Math.min(1, (zoom - MAP_LABEL_MIN_ZOOM) / (MAP_LABEL_MAX_ZOOM - MAP_LABEL_MIN_ZOOM));
-    const size = 0.55 + t * (0.95 - 0.55);
-    document.documentElement.style.setProperty('--map-label-size', `${size.toFixed(2)}rem`);
-    document.documentElement.style.setProperty('--map-label-opacity', '1');
+    map.on('zoomend', update);
+    return update;
   }
-  map.on('zoomend', updateMapLabelScale);
+
+  // Rochers : uniquement à fort niveau de zoom.
+  const updateRockLabels = bindZoomScaledLabels('--rock-label-size', '--rock-label-opacity', {
+    minZoom: 15,
+    maxZoom: 19,
+  });
+  // Points de repère : dès un zoom modéré, comme avant.
+  const updateLandmarkLabels = bindZoomScaledLabels('--landmark-label-size', '--landmark-label-opacity', {
+    minZoom: 13,
+    maxZoom: 18,
+  });
+  // Horaires de passage sur les seuils : uniquement à fort niveau de zoom, taille fixe.
+  const updatePointLabels = bindZoomScaledLabels('--point-label-size', '--point-label-opacity', {
+    minZoom: 15,
+    maxZoom: 19,
+    minSize: 0.8,
+    maxSize: 0.8,
+  });
+  function updateMapLabelScale() {
+    updateRockLabels();
+    updateLandmarkLabels();
+    updatePointLabels();
+  }
 
   addLocateControl(map);
 
