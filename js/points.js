@@ -147,6 +147,24 @@ const POINTS = [
     thresholdMin: 2.45, // mètres
     notes: "",
   },
+  {
+    id: 'port-express',
+    name: "Port express",
+    lat: 48.78800255433153,
+    lon: -3.012251282326735,
+    tideSource: "data/tidedata.json",
+    thresholdMin: 4.2, // mètres
+    notes: "Attention au pavé à l'ouest",
+  },
+  {
+    id: 'ponton-cras',
+    name: "Ponton Cras",
+    lat: 48.78542768981338,
+    lon: -3.0442912647352287,
+    tideSource: "data/tidedata.json",
+    thresholdMin: 4.85, // mètres
+    notes: "",
+  },
 ];
 
 export { POINTS };
