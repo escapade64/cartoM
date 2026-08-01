@@ -6,6 +6,11 @@ import { NAV_LINES } from './navlines.js';
 const DEFAULT_TIDE_SOURCE = 'data/tidedata.json';
 const DEFAULT_CENTER = [48.85, -3.0];
 
+const GITHUB_OWNER = 'escapade64';
+const GITHUB_REPO = 'cartoM';
+const GITHUB_BRANCH = 'main';
+const TOKEN_STORAGE_KEY = 'cartom-edit-gh-token';
+
 const MARKER_COLORS = {
   points: '#1a73e8',
   rocks: '#8d7355',
@@ -549,6 +554,8 @@ const exportText = document.getElementById('export-text');
 const copyBtn = document.getElementById('copy-btn');
 const downloadLink = document.getElementById('download-link');
 const closeExportBtn = document.getElementById('close-export-btn');
+const publishBtn = document.getElementById('publish-btn');
+const publishStatus = document.getElementById('publish-status');
 
 const EXPORTERS = {
   points: () => [formatPointsFile(pointsData), 'points.js'],
@@ -557,6 +564,8 @@ const EXPORTERS = {
   navlines: () => [formatNavlinesFile(navlinesData), 'navlines.js'],
 };
 
+let currentExport = null; // { path, content }
+
 for (const btn of document.querySelectorAll('[data-export]')) {
   btn.addEventListener('click', () => {
     const [content, filename] = EXPORTERS[btn.dataset.export]();
@@ -564,6 +573,8 @@ for (const btn of document.querySelectorAll('[data-export]')) {
     const blob = new Blob([content], { type: 'text/javascript' });
     downloadLink.href = URL.createObjectURL(blob);
     downloadLink.download = filename;
+    currentExport = { path: `js/${filename}`, content };
+    publishStatus.textContent = '';
     exportPanel.hidden = false;
     exportText.focus();
     exportText.select();
@@ -584,4 +595,80 @@ copyBtn.addEventListener('click', async () => {
 
 closeExportBtn.addEventListener('click', () => {
   exportPanel.hidden = true;
+});
+
+// --- Jeton GitHub (stocké uniquement dans ce navigateur) ---
+
+const tokenStatusEl = document.getElementById('token-status');
+const tokenEditBtn = document.getElementById('token-edit-btn');
+
+function getToken() {
+  return localStorage.getItem(TOKEN_STORAGE_KEY) || '';
+}
+
+function updateTokenStatus() {
+  tokenStatusEl.textContent = getToken() ? 'Jeton GitHub : configuré' : 'Jeton GitHub : non configuré';
+}
+
+tokenEditBtn.addEventListener('click', () => {
+  const next = prompt(
+    'Colle ton jeton GitHub (fine-grained, permission "Contents: Read and write" sur ce dépôt uniquement).\n' +
+      'Laisse vide et valide pour l’oublier.',
+    getToken()
+  );
+  if (next === null) return;
+  if (next.trim() === '') {
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+  } else {
+    localStorage.setItem(TOKEN_STORAGE_KEY, next.trim());
+  }
+  updateTokenStatus();
+});
+
+updateTokenStatus();
+
+// --- Publication directe sur GitHub (API contents) ---
+
+async function publishFile(path, content, message) {
+  const token = getToken();
+  if (!token) {
+    throw new Error('Jeton GitHub non configuré (bouton "Configurer" en haut de la page).');
+  }
+  const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`;
+  const headers = { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' };
+
+  const getResp = await fetch(`${apiUrl}?ref=${GITHUB_BRANCH}`, { headers });
+  if (!getResp.ok) {
+    throw new Error(`Lecture du fichier actuel impossible (HTTP ${getResp.status}).`);
+  }
+  const current = await getResp.json();
+
+  const putResp = await fetch(apiUrl, {
+    method: 'PUT',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      message,
+      content: btoa(unescape(encodeURIComponent(content))),
+      sha: current.sha,
+      branch: GITHUB_BRANCH,
+    }),
+  });
+  if (!putResp.ok) {
+    const err = await putResp.json().catch(() => ({}));
+    throw new Error(err.message || `Échec de la publication (HTTP ${putResp.status}).`);
+  }
+}
+
+publishBtn.addEventListener('click', async () => {
+  if (!currentExport) return;
+  publishBtn.disabled = true;
+  publishStatus.textContent = 'Publication en cours…';
+  try {
+    await publishFile(currentExport.path, currentExport.content, `Édition ${currentExport.path} depuis edit.html`);
+    publishStatus.textContent = 'Publié ! Le site se mettra à jour dans une minute ou deux.';
+  } catch (err) {
+    publishStatus.textContent = `Erreur : ${err.message}`;
+  } finally {
+    publishBtn.disabled = false;
+  }
 });

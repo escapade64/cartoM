@@ -11,6 +11,10 @@
   <header class="edit-header">
     <h1>Édition des données CartoM</h1>
     <p>Clique sur un élément de la carte pour l'éditer, ou sur un endroit vide pour en créer un nouveau.</p>
+    <div class="token-settings">
+      <span id="token-status">Jeton GitHub : non configuré</span>
+      <button type="button" id="token-edit-btn">Configurer</button>
+    </div>
   </header>
 
   <div class="edit-layout">
@@ -31,8 +35,10 @@
     <div class="export-actions">
       <button id="copy-btn" type="button">Copier</button>
       <a id="download-link" class="download-btn" download="">Télécharger</a>
+      <button id="publish-btn" type="button">Publier sur GitHub</button>
       <button id="close-export-btn" type="button">Fermer</button>
     </div>
+    <p id="publish-status" class="publish-status"></p>
     <textarea id="export-text" readonly spellcheck="false"></textarea>
   </div>
 

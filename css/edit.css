@@ -34,6 +34,25 @@ body {
   max-width: 70ch;
 }
 
+.token-settings {
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  opacity: 0.9;
+}
+
+.token-settings button {
+  padding: 0.25rem 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: transparent;
+  color: #fff;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
 .edit-layout {
   flex: 1 1 auto;
   min-height: 0;
@@ -208,6 +227,20 @@ body {
 
 #close-export-btn {
   background: #5f6368;
+}
+
+#publish-btn {
+  background: #1e8e3e;
+}
+
+#publish-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.publish-status {
+  margin: 0;
+  font-size: 0.8rem;
 }
 
 #export-text {
