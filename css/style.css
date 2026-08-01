@@ -67,6 +67,11 @@ body {
   animation: locate-pulse 1s ease-in-out infinite;
 }
 
+.leaflet-control-locate.tracking .leaflet-control-locate-btn {
+  color: #ffffff;
+  background: #1a73e8;
+}
+
 @keyframes locate-pulse {
   50% { opacity: 0.35; }
 }

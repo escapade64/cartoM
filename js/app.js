@@ -87,29 +87,52 @@ function showDataWarning(message) {
   el.textContent = message;
 }
 
-// Bouton "centrer sur ma position", basé sur l'API de géolocalisation native de
-// Leaflet (map.locate) — pas de dépendance externe.
+// Bouton "suivre ma position", basé sur l'API de géolocalisation native de
+// Leaflet (map.locate en mode watch) — pas de dépendance externe. Premier clic :
+// centre la carte et démarre le suivi continu (le point bleu se déplace avec
+// vous sans reforcer le recentrage, pour ne pas gêner si vous consultez
+// d'autres points pendant que vous naviguez). Deuxième clic : arrête le suivi.
 function addLocateControl(map) {
   let marker = null;
   let accuracyCircle = null;
+  let watching = false;
+  let awaitingFirstFix = false;
+
+  const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-locate');
+
+  function setState(state) {
+    container.classList.remove('locating', 'tracking');
+    if (state) container.classList.add(state);
+  }
 
   const LocateControl = L.Control.extend({
     options: { position: 'bottomright' },
     onAdd() {
-      const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-locate');
       const link = L.DomUtil.create('a', 'leaflet-control-locate-btn', container);
       link.href = '#';
-      link.title = 'Centrer sur ma position';
+      link.title = 'Suivre ma position';
       link.setAttribute('role', 'button');
-      link.setAttribute('aria-label', 'Centrer sur ma position');
+      link.setAttribute('aria-label', 'Suivre ma position');
       link.innerHTML =
         '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 2a1 1 0 0 1 1 1v1.06A8.01 8.01 0 0 1 19.94 11H21a1 1 0 1 1 0 2h-1.06A8.01 8.01 0 0 1 13 19.94V21a1 1 0 1 1-2 0v-1.06A8.01 8.01 0 0 1 4.06 13H3a1 1 0 1 1 0-2h1.06A8.01 8.01 0 0 1 11 4.06V3a1 1 0 0 1 1-1zm0 4a6 6 0 1 0 0 12 6 6 0 0 0 0-12zm0 3.5A2.5 2.5 0 1 1 9.5 12 2.5 2.5 0 0 1 12 9.5z"/></svg>';
 
       L.DomEvent.disableClickPropagation(container);
       L.DomEvent.on(link, 'click', (e) => {
         L.DomEvent.stop(e);
-        container.classList.add('locating');
-        map.locate({ setView: true, maxZoom: 16, enableHighAccuracy: true });
+        if (watching) {
+          map.stopLocate();
+          watching = false;
+          setState(null);
+          return;
+        }
+        watching = true;
+        awaitingFirstFix = true;
+        setState('locating');
+        // setView volontairement omis : avec watch:true, Leaflet recentrerait la
+        // carte à CHAQUE mise à jour de position, ce qui gênerait la consultation
+        // d'autres points pendant la navigation. On centre nous-même une seule
+        // fois, au premier fix (voir 'locationfound' ci-dessous).
+        map.locate({ watch: true, enableHighAccuracy: true });
       });
 
       return container;
@@ -119,7 +142,12 @@ function addLocateControl(map) {
   map.addControl(new LocateControl());
 
   map.on('locationfound', (e) => {
-    document.querySelector('.leaflet-control-locate')?.classList.remove('locating');
+    if (awaitingFirstFix) {
+      awaitingFirstFix = false;
+      setState('tracking');
+      const zoom = Math.max(map.getZoom(), 16);
+      map.setView(e.latlng, zoom);
+    }
     if (marker) {
       marker.setLatLng(e.latlng);
       accuracyCircle.setLatLng(e.latlng).setRadius(e.accuracy);
@@ -142,7 +170,9 @@ function addLocateControl(map) {
   });
 
   map.on('locationerror', (e) => {
-    document.querySelector('.leaflet-control-locate')?.classList.remove('locating');
+    watching = false;
+    awaitingFirstFix = false;
+    setState(null);
     alert(`Impossible d'obtenir votre position : ${e.message}`);
   });
 }
