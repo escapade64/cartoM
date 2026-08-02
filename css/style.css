@@ -72,6 +72,17 @@ body {
   background: #1a73e8;
 }
 
+.leaflet-control-wakelock-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.leaflet-control-wakelock.active .leaflet-control-wakelock-btn {
+  color: #ffffff;
+  background: #f4b400;
+}
+
 @keyframes locate-pulse {
   50% { opacity: 0.35; }
 }

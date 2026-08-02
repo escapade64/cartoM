@@ -177,6 +177,63 @@ function addLocateControl(map) {
   });
 }
 
+// Bouton "garder l'écran allumé" (Screen Wake Lock API — Safari iOS 16.4+).
+// Le verrou est automatiquement relâché par le navigateur si l'onglet passe en
+// arrière-plan ; on le redemande au retour si l'utilisateur l'avait activé.
+function addWakeLockControl(map) {
+  if (!('wakeLock' in navigator)) return;
+
+  let sentinel = null;
+  let enabled = false;
+  const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-wakelock');
+
+  async function acquire() {
+    try {
+      sentinel = await navigator.wakeLock.request('screen');
+      sentinel.addEventListener('release', () => {
+        sentinel = null;
+      });
+    } catch (err) {
+      console.warn("Écran allumé refusé", err);
+    }
+  }
+
+  const WakeLockControl = L.Control.extend({
+    options: { position: 'bottomright' },
+    onAdd() {
+      const link = L.DomUtil.create('a', 'leaflet-control-wakelock-btn', container);
+      link.href = '#';
+      link.title = "Garder l'écran allumé";
+      link.setAttribute('role', 'button');
+      link.setAttribute('aria-label', "Garder l'écran allumé");
+      link.innerHTML =
+        '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 2a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1zm0 6a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM4.22 4.22a1 1 0 0 1 1.42 0l1.41 1.42a1 1 0 1 1-1.41 1.41L4.22 5.64a1 1 0 0 1 0-1.42zm14.14 0a1 1 0 0 1 0 1.42l-1.41 1.41a1 1 0 1 1-1.42-1.41l1.42-1.42a1 1 0 0 1 1.41 0zM2 12a1 1 0 0 1 1-1h2a1 1 0 1 1 0 2H3a1 1 0 0 1-1-1zm17 0a1 1 0 0 1 1-1h2a1 1 0 1 1 0 2h-2a1 1 0 0 1-1-1zM6.63 16.95a1 1 0 0 1 1.41 1.41L6.63 19.78a1 1 0 1 1-1.41-1.41l1.41-1.42zm10.74 0 1.41 1.41a1 1 0 1 1-1.41 1.42l-1.42-1.42a1 1 0 0 1 1.42-1.41zM12 19a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0v-2a1 1 0 0 1 1-1z"/></svg>';
+
+      L.DomEvent.disableClickPropagation(container);
+      L.DomEvent.on(link, 'click', async (e) => {
+        L.DomEvent.stop(e);
+        enabled = !enabled;
+        container.classList.toggle('active', enabled);
+        if (enabled) {
+          await acquire();
+        } else if (sentinel) {
+          await sentinel.release();
+        }
+      });
+
+      return container;
+    },
+  });
+
+  map.addControl(new WakeLockControl());
+
+  document.addEventListener('visibilitychange', async () => {
+    if (enabled && document.visibilityState === 'visible' && !sentinel) {
+      await acquire();
+    }
+  });
+}
+
 async function init() {
   const map = L.map('map', { zoomControl: true });
 
@@ -309,6 +366,7 @@ async function init() {
   }
 
   addLocateControl(map);
+  addWakeLockControl(map);
 
   const initialPoint = POINTS.find((p) => p.id === 'mouillage-pescadou');
   if (initialPoint) {
