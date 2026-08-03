@@ -672,3 +672,26 @@ publishBtn.addEventListener('click', async () => {
     publishBtn.disabled = false;
   }
 });
+
+// --- Publier tout (indépendant du panneau d'export, toujours accessible
+// depuis l'en-tête, quel que soit le type d'élément modifié) ---
+
+const publishAllBtn = document.getElementById('publish-all-btn');
+const publishAllStatus = document.getElementById('publish-all-status');
+
+publishAllBtn.addEventListener('click', async () => {
+  publishAllBtn.disabled = true;
+  const results = [];
+  for (const key of Object.keys(EXPORTERS)) {
+    const [content, filename] = EXPORTERS[key]();
+    publishAllStatus.textContent = `Publication de ${filename}…`;
+    try {
+      await publishFile(`js/${filename}`, content, `Édition ${filename} depuis edit.html`);
+      results.push(`${filename} ✓`);
+    } catch (err) {
+      results.push(`${filename} ✗ (${err.message})`);
+    }
+  }
+  publishAllStatus.textContent = results.join(' · ');
+  publishAllBtn.disabled = false;
+});

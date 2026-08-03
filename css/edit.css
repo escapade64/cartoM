@@ -53,6 +53,20 @@ body {
   font-size: 0.75rem;
 }
 
+#publish-all-btn {
+  background: #1e8e3e;
+  border-color: #1e8e3e;
+}
+
+#publish-all-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+#publish-all-status {
+  font-size: 0.75rem;
+}
+
 .edit-layout {
   flex: 1 1 auto;
   min-height: 0;
