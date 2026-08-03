@@ -1,10 +1,11 @@
 // Tracés de navigation (chenaux, passages, contournements) issus d'un relevé
 // terrain. Chaque entrée : { name, notes, path: [[lat, lon], ...] }.
+// Régénéré depuis edit.html, puis collé dans js/navlines.js.
 
 const NAV_LINES = [
   {
-    name: 'Baie cormorandière',
-    notes: '',
+    name: "Baie cormorandière",
+    notes: "",
     path: [
       [48.8721728, -3.0354621],
       [48.8708743, -3.037243],
@@ -13,16 +14,16 @@ const NAV_LINES = [
     ],
   },
   {
-    name: 'Nurserie Tétons',
-    notes: '',
+    name: "Nurserie Tétons",
+    notes: "",
     path: [
       [48.8487254, -3.0303998],
       [48.8458448, -3.0318696],
     ],
   },
   {
-    name: 'Anse Pomelin',
-    notes: 'Excellent après une pluie.',
+    name: "Anse Pomelin",
+    notes: "Excellent après une pluie.",
     path: [
       [48.8520445, -3.0653528],
       [48.8476391, -3.0633787],
@@ -31,8 +32,8 @@ const NAV_LINES = [
     ],
   },
   {
-    name: 'Baie blanche',
-    notes: '',
+    name: "Baie blanche",
+    notes: "",
     path: [
       [48.8688831, -3.0214016],
       [48.8748108, -3.026251],
@@ -41,8 +42,8 @@ const NAV_LINES = [
     ],
   },
   {
-    name: 'Trieux Kerpont du Chien',
-    notes: '',
+    name: "Trieux Kerpont du Chien",
+    notes: "",
     path: [
       [48.8492555, -3.0301747],
       [48.8486766, -3.0264196],
@@ -51,8 +52,8 @@ const NAV_LINES = [
     ],
   },
   {
-    name: 'Kerpont bis',
-    notes: '',
+    name: "Kerpont bis",
+    notes: "",
     path: [
       [48.8536748, -3.0239166],
       [48.8502861, -3.0255689],
@@ -63,8 +64,8 @@ const NAV_LINES = [
     ],
   },
   {
-    name: 'Triangle Nord',
-    notes: '',
+    name: "Triangle Nord",
+    notes: "",
     path: [
       [48.8519552, -3.0193216],
       [48.8517575, -3.0206949],
@@ -75,16 +76,16 @@ const NAV_LINES = [
     ],
   },
   {
-    name: 'Carré direct',
-    notes: '',
+    name: "Carré direct",
+    notes: "",
     path: [
       [48.8547922, -3.0179749],
       [48.8553146, -3.0229745],
     ],
   },
   {
-    name: 'Contournement Velven Ouest',
-    notes: '',
+    name: "Contournement Velven Ouest",
+    notes: "",
     path: [
       [48.8544747, -3.0231332],
       [48.8541783, -3.0220496],
@@ -94,8 +95,8 @@ const NAV_LINES = [
     ],
   },
   {
-    name: 'Kerpont Kerpont du Chien',
-    notes: 'Cailloux dans le chenal à 3,20m',
+    name: "Kerpont Kerpont du Chien",
+    notes: "Cailloux dans le chenal à 3,20m",
     path: [
       [48.8474547, -3.0138337],
       [48.8481607, -3.0144345],
@@ -103,8 +104,8 @@ const NAV_LINES = [
     ],
   },
   {
-    name: 'Dérive Nord Kerpont',
-    notes: '',
+    name: "Dérive Nord Kerpont",
+    notes: "",
     path: [
       [48.8514682, -3.0253273],
       [48.8514964, -3.0264914],
@@ -114,8 +115,8 @@ const NAV_LINES = [
     ],
   },
   {
-    name: 'Passage serré',
-    notes: '',
+    name: "Passage serré",
+    notes: "",
     path: [
       [48.8506804, -3.027398],
       [48.850278, -3.02728],
@@ -123,8 +124,8 @@ const NAV_LINES = [
     ],
   },
   {
-    name: 'Sortie baie',
-    notes: '',
+    name: "Sortie baie",
+    notes: "",
     path: [
       [48.8507899, -2.994165],
       [48.8499992, -2.9917618],
@@ -134,8 +135,8 @@ const NAV_LINES = [
     ],
   },
   {
-    name: 'Fond Kerpont bis',
-    notes: '',
+    name: "Fond Kerpont bis",
+    notes: "",
     path: [
       [48.8483332, -3.0217019],
       [48.8458339, -3.0239978],
@@ -143,8 +144,8 @@ const NAV_LINES = [
     ],
   },
   {
-    name: 'Baie Sainte Anne',
-    notes: '',
+    name: "Baie Sainte Anne",
+    notes: "",
     path: [
       [48.8641125, -3.0317655],
       [48.8664204, -3.0318728],
@@ -154,16 +155,16 @@ const NAV_LINES = [
     ],
   },
   {
-    name: 'Passage Ste Anne / Tahiti',
-    notes: '',
+    name: "Passage Ste Anne / Tahiti",
+    notes: "",
     path: [
       [48.8661254, -3.0331883],
       [48.8692731, -3.0361924],
     ],
   },
   {
-    name: 'Entrée 2',
-    notes: 'Attention, pas clair au bout, prendre à babord vers rocher du milieu',
+    name: "Entrée 2",
+    notes: "Attention, pas clair au bout, prendre à babord vers rocher du milieu",
     path: [
       [48.8646219, -3.0290352],
       [48.8650418, -3.0305373],
@@ -171,8 +172,8 @@ const NAV_LINES = [
     ],
   },
   {
-    name: 'Sortie Kervarec',
-    notes: '',
+    name: "Sortie Kervarec",
+    notes: "",
     path: [
       [48.8533433, -3.0120747],
       [48.853908, -3.012756],
@@ -181,8 +182,8 @@ const NAV_LINES = [
     ],
   },
   {
-    name: 'à tester',
-    notes: '',
+    name: "à tester",
+    notes: "",
     path: [
       [48.851792, -3.0432145],
       [48.854432, -3.0484449],
@@ -194,12 +195,23 @@ const NAV_LINES = [
     ],
   },
   {
-    name: 'Tour du massif',
-    notes: '',
+    name: "Tour du massif",
+    notes: "",
     path: [
       [48.8513365, -3.0222349],
       [48.850214, -3.0210977],
       [48.8518201, -3.0193757],
+    ],
+  },
+  {
+    name: "test ",
+    notes: "",
+    path: [
+      [48.852070784480894, -3.003269000547546],
+      [48.85339883718519, -3.0024968920444133],
+      [48.851053528796484, -3.0014674140402295],
+      [48.85060140852472, -3.003011631046496],
+      [48.851618673395, -3.0032261056307084],
     ],
   },
 ];
