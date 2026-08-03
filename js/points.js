@@ -1,6 +1,6 @@
 // Configuration des points de passage.
 // Peut être éditée à la main (dupliquer un objet ci-dessous) ou régénérée
-// depuis edit.html (clic sur la carte + tableau), puis collée ici.
+// depuis edit.html (clic sur la carte), puis collée ici.
 
 const POINTS = [
   {
