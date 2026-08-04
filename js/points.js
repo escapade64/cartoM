@@ -24,8 +24,8 @@ const POINTS = [
   {
     id: 'tahiti-express',
     name: "Tahiti Express",
-    lat: 48.866513,
-    lon: -3.03373,
+    lat: 48.86640858003744,
+    lon: -3.0337930108136613,
     tideSource: "data/tidedata.json",
     thresholdMin: 5.4, // mètres
     notes: "",
