@@ -60,8 +60,8 @@ const POINTS = [
   {
     id: 'kerpont',
     name: "Kerpont",
-    lat: 48.8471952,
-    lon: -3.0145399,
+    lat: 48.84608524663024,
+    lon: -3.014094568191359,
     tideSource: "data/tidedata.json",
     thresholdMin: 2.6, // mètres
     notes: "le seuil est assez étendu vers le Sud",
@@ -69,8 +69,8 @@ const POINTS = [
   {
     id: 'beniguet',
     name: "Beniguet",
-    lat: 48.8457761,
-    lon: -3.0215696,
+    lat: 48.84578203342697,
+    lon: -3.0214118001295236,
     tideSource: "data/tidedata.json",
     thresholdMin: 4.2, // mètres
     notes: "Permet de contourner le Kerpont à marée haute",
@@ -163,6 +163,33 @@ const POINTS = [
     lon: -3.0442912647352287,
     tideSource: "data/tidedata.json",
     thresholdMin: 4.85, // mètres
+    notes: "",
+  },
+  {
+    id: 'passage-beniguet',
+    name: "Passage Béniguet",
+    lat: 48.83819287976765,
+    lon: -3.0210874552395177,
+    tideSource: "data/tidedata.json",
+    thresholdMin: 2.9, // mètres
+    notes: "",
+  },
+  {
+    id: 'passage-est-la-chevre',
+    name: "Passage Est La Chèvre",
+    lat: 48.834464718625576,
+    lon: -3.025454180763372,
+    tideSource: "data/tidedata.json",
+    thresholdMin: 2.6, // mètres
+    notes: "",
+  },
+  {
+    id: 'seuil-1-kerpont-kerpont-du-chien',
+    name: "Seuil 1 Kerpont / Kerpont du Chien",
+    lat: 48.848249056445596,
+    lon: -3.0164406070097316,
+    tideSource: "data/tidedata.json",
+    thresholdMin: 2.4, // mètres
     notes: "",
   },
 ];
