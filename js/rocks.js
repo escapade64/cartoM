@@ -39,6 +39,7 @@ const ROCKS = [
   { name: "Rocher du milieu (Baie blanche)", lat: 48.8644235, lon: -3.0320629 },
   { name: "Frérot 1", lat: 48.8695675, lon: -3.0394588 },
   { name: "Frérot 2", lat: 48.8693218, lon: -3.0396749 },
+  { name: "Solo", lat: 48.86825487972545, lon: -3.0347723820630206 },
 ];
 
 export { ROCKS };
