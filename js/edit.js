@@ -192,8 +192,16 @@ const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 });
 
+const seamarks = L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
+  maxZoom: 18,
+  attribution: '&copy; <a href="https://www.openseamap.org">OpenSeaMap</a>',
+});
+
 L.control
-  .layers({ 'Photos aériennes à marée basse (2011-2014)': ortholittorale, 'Plan (OpenStreetMap)': osm })
+  .layers(
+    { 'Photos aériennes à marée basse (2011-2014)': ortholittorale, 'Plan (OpenStreetMap)': osm },
+    { 'Balisage marin (OpenSeaMap)': seamarks }
+  )
   .addTo(map);
 
 // --- Données (toutes catégories chargées et affichées ensemble) ---
@@ -549,53 +557,12 @@ renderEditor();
 
 // --- Export ---
 
-const exportPanel = document.getElementById('export-panel');
-const exportText = document.getElementById('export-text');
-const copyBtn = document.getElementById('copy-btn');
-const downloadLink = document.getElementById('download-link');
-const closeExportBtn = document.getElementById('close-export-btn');
-const publishBtn = document.getElementById('publish-btn');
-const publishStatus = document.getElementById('publish-status');
-
 const EXPORTERS = {
   points: () => [formatPointsFile(pointsData), 'points.js'],
   rocks: () => [formatRocksFile(rocksData), 'rocks.js'],
   landmarks: () => [formatLandmarksFile(landmarksData), 'landmarks.js'],
   navlines: () => [formatNavlinesFile(navlinesData), 'navlines.js'],
 };
-
-let currentExport = null; // { path, content }
-
-for (const btn of document.querySelectorAll('[data-export]')) {
-  btn.addEventListener('click', () => {
-    const [content, filename] = EXPORTERS[btn.dataset.export]();
-    exportText.value = content;
-    const blob = new Blob([content], { type: 'text/javascript' });
-    downloadLink.href = URL.createObjectURL(blob);
-    downloadLink.download = filename;
-    currentExport = { path: `js/${filename}`, content };
-    publishStatus.textContent = '';
-    exportPanel.hidden = false;
-    exportText.focus();
-    exportText.select();
-  });
-}
-
-copyBtn.addEventListener('click', async () => {
-  try {
-    await navigator.clipboard.writeText(exportText.value);
-    copyBtn.textContent = 'Copié !';
-    setTimeout(() => {
-      copyBtn.textContent = 'Copier';
-    }, 1500);
-  } catch {
-    exportText.select();
-  }
-});
-
-closeExportBtn.addEventListener('click', () => {
-  exportPanel.hidden = true;
-});
 
 // --- Jeton GitHub (stocké uniquement dans ce navigateur) ---
 
@@ -659,22 +626,8 @@ async function publishFile(path, content, message) {
   }
 }
 
-publishBtn.addEventListener('click', async () => {
-  if (!currentExport) return;
-  publishBtn.disabled = true;
-  publishStatus.textContent = 'Publication en cours…';
-  try {
-    await publishFile(currentExport.path, currentExport.content, `Édition ${currentExport.path} depuis edit.html`);
-    publishStatus.textContent = 'Publié ! Le site se mettra à jour dans une minute ou deux.';
-  } catch (err) {
-    publishStatus.textContent = `Erreur : ${err.message}`;
-  } finally {
-    publishBtn.disabled = false;
-  }
-});
-
-// --- Publier tout (indépendant du panneau d'export, toujours accessible
-// depuis l'en-tête, quel que soit le type d'élément modifié) ---
+// --- Publier tout (toujours accessible depuis l'en-tête, quel que soit le
+// type d'élément modifié) ---
 
 const publishAllBtn = document.getElementById('publish-all-btn');
 const publishAllStatus = document.getElementById('publish-all-status');
