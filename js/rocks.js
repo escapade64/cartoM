@@ -41,6 +41,8 @@ const ROCKS = [
   { name: "Frérot 2", lat: 48.8693218, lon: -3.0396749 },
   { name: "Solo", lat: 48.86825487972545, lon: -3.0347723820630206 },
   { name: "Danger", lat: 48.85836451982279, lon: -3.046623321778004 },
+  { name: "Caillou Sud Maudez", lat: 48.858604600069924, lon: -3.0444011331241954 },
+  { name: "Rocher", lat: 48.85803277247149, lon: -3.040011432719104 },
 ];
 
 export { ROCKS };
