@@ -19,6 +19,7 @@ const LANDMARKS = [
   { name: "Le Paradis blanc", lat: 48.8870821, lon: -3.0555197, notes: "" },
   { name: "Surface Land", lat: 48.86474783100325, lon: -3.054084267845765, notes: "" },
   { name: "Ile Vierge", lat: 48.8670469359267, lon: -3.0566622994162866, notes: "" },
+  { name: "Baie d'Oscar", lat: 48.865236955168974, lon: -3.047847779676878, notes: "" },
 ];
 
 // Polygones de danger : { name, path: [[lat, lon], ...] }.
