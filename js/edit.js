@@ -164,6 +164,36 @@ export { NAV_LINES };
 `;
 }
 
+function xmlEscape(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+// Une route GPX par ligne de navigation — format lisible par la plupart des
+// traceurs (dont les Lowrance) via import depuis une carte SD.
+function formatNavlinesGpx(lines) {
+  const routes = lines
+    .map((line) => {
+      const desc = line.notes ? `\n    <desc>${xmlEscape(line.notes)}</desc>` : '';
+      const points = line.path.map(([lat, lon]) => `    <rtept lat="${lat}" lon="${lon}"></rtept>`).join('\n');
+      return `  <rte>
+    <name>${xmlEscape(line.name || 'Sans nom')}</name>${desc}
+${points}
+  </rte>`;
+    })
+    .join('\n');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="CartoM" xmlns="http://www.topografix.com/GPX/1/1">
+${routes}
+</gpx>
+`;
+}
+
 function coloredIcon(color) {
   return L.divIcon({
     className: 'edit-marker',
@@ -241,7 +271,7 @@ function createItemMarker(type, item) {
 }
 
 function createNavlinePolyline(line) {
-  const polyline = L.polyline(line.path, { color: '#f4511e', weight: 3, opacity: 0.85, dashArray: '6 4' }).addTo(
+  const polyline = L.polyline(line.path, { color: '#ffffff', weight: 3, opacity: 0.9, dashArray: '6 4' }).addTo(
     map
   );
   polyline.on('click', (e) => {
@@ -352,7 +382,7 @@ function deleteNavline(line) {
 function startNewNavline() {
   deselectCurrent();
   drawingPath = [];
-  drawingPolyline = L.polyline([], { color: '#f4511e', weight: 3, dashArray: '4 4' }).addTo(map);
+  drawingPolyline = L.polyline([], { color: '#ffffff', weight: 3, dashArray: '4 4' }).addTo(map);
   uiState = { mode: 'drawing-navline' };
   renderEditor();
 }
@@ -563,6 +593,17 @@ const EXPORTERS = {
   landmarks: () => [formatLandmarksFile(landmarksData), 'landmarks.js'],
   navlines: () => [formatNavlinesFile(navlinesData), 'navlines.js'],
 };
+
+document.getElementById('export-gpx-btn').addEventListener('click', () => {
+  const gpx = formatNavlinesGpx(navlinesData);
+  const blob = new Blob([gpx], { type: 'application/gpx+xml' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'navlines.gpx';
+  a.click();
+  URL.revokeObjectURL(url);
+});
 
 // --- Jeton GitHub (stocké uniquement dans ce navigateur) ---
 

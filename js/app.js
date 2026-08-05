@@ -267,9 +267,9 @@ async function init() {
   // Affichés par défaut, pas dans le sélecteur de calques.
   for (const line of NAV_LINES) {
     const polyline = L.polyline(line.path, {
-      color: '#f4511e',
+      color: '#ffffff',
       weight: 3,
-      opacity: 0.85,
+      opacity: 0.9,
       dashArray: '6 4',
     }).addTo(map);
     const label = line.notes ? `<strong>${line.name}</strong><br>${line.notes}` : `<strong>${line.name}</strong>`;
