@@ -43,6 +43,7 @@ const ROCKS = [
   { name: "Danger", lat: 48.85836451982279, lon: -3.046623321778004 },
   { name: "Caillou Sud Maudez", lat: 48.858604600069924, lon: -3.0444011331241954 },
   { name: "Rocher", lat: 48.85803277247149, lon: -3.040011432719104 },
+  { name: "Butte à 1,50m", lat: 48.867003397433685, lon: -3.046516390407785 },
 ];
 
 export { ROCKS };
