@@ -192,6 +192,51 @@ const POINTS = [
     thresholdMin: 2.4, // mètres
     notes: "",
   },
+  {
+    id: 'pecherie-du-fond',
+    name: "Pêcherie du fond",
+    lat: 48.864891239641224,
+    lon: -3.052825328500513,
+    tideSource: "data/tidedata.json",
+    thresholdMin: 1.5, // mètres
+    notes: "",
+  },
+  {
+    id: 'seuil-du-passage-vers-pomelin',
+    name: "Seuil du passage vers Pomelin",
+    lat: 48.861482182251734,
+    lon: -3.063168602193749,
+    tideSource: "data/tidedata.json",
+    thresholdMin: 4, // mètres
+    notes: "",
+  },
+  {
+    id: 'seuil-nord',
+    name: "Seuil Nord",
+    lat: 48.8681870980839,
+    lon: -3.0542637320125725,
+    tideSource: "data/tidedata.json",
+    thresholdMin: 4, // mètres
+    notes: "Pas très net",
+  },
+  {
+    id: 'pecherie',
+    name: "Pêcherie",
+    lat: 48.869673178001236,
+    lon: -3.0557390712799264,
+    tideSource: "data/tidedata.json",
+    thresholdMin: 3, // mètres
+    notes: "",
+  },
+  {
+    id: 'passage',
+    name: "Passage",
+    lat: 48.86992767184768,
+    lon: -3.0508858507329855,
+    tideSource: "data/tidedata.json",
+    thresholdMin: 4.7, // mètres
+    notes: "",
+  },
 ];
 
 export { POINTS };
