@@ -237,6 +237,15 @@ const POINTS = [
     thresholdMin: 4.7, // mètres
     notes: "",
   },
+  {
+    id: 'cale-de-la-distillerie',
+    name: "Cale de la distillerie",
+    lat: 48.856168259198824,
+    lon: -3.076411492046825,
+    tideSource: "data/tidedata.json",
+    thresholdMin: 6, // mètres
+    notes: "",
+  },
 ];
 
 export { POINTS };
