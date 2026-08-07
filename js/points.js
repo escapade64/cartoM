@@ -246,6 +246,24 @@ const POINTS = [
     thresholdMin: 6, // mètres
     notes: "",
   },
+  {
+    id: 'raccourci-vers-platier',
+    name: "Raccourci vers platier",
+    lat: 48.85803392935861,
+    lon: -2.9791707342321248,
+    tideSource: "data/tidedata.json",
+    thresholdMin: 2.4, // mètres
+    notes: "",
+  },
+  {
+    id: 'passage-gilos',
+    name: "Passage Gilos",
+    lat: 48.85518574398022,
+    lon: -2.980524276029609,
+    tideSource: "data/tidedata.json",
+    thresholdMin: 2.9, // mètres
+    notes: "",
+  },
 ];
 
 export { POINTS };
