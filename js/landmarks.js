@@ -16,7 +16,7 @@ const LANDMARKS = [
   { name: "Corps Mort Crouezen", lat: 48.8509361, lon: -2.9940811, notes: "" },
   { name: "Cale Couezen", lat: 48.8500015, lon: -2.9971323, notes: "" },
   { name: "Baies des amandes", lat: 48.8737543, lon: -3.0428222, notes: "" },
-  { name: "Le Paradis blanc", lat: 48.8870821, lon: -3.0555197, notes: "" },
+  { name: "Le Paradis blanc", lat: 48.886137479860444, lon: -3.052051386093711, notes: "" },
   { name: "Surface Land", lat: 48.86474783100325, lon: -3.054084267845765, notes: "" },
   { name: "Ile Vierge", lat: 48.8670469359267, lon: -3.0566622994162866, notes: "" },
   { name: "Baie d'Oscar", lat: 48.865236955168974, lon: -3.047847779676878, notes: "" },
