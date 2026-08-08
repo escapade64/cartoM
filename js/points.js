@@ -264,6 +264,15 @@ const POINTS = [
     thresholdMin: 2.9, // mètres
     notes: "",
   },
+  {
+    id: 'seuil-sud-maudez',
+    name: "Seuil Sud Maudez",
+    lat: 48.85975992379425,
+    lon: -3.053673531282404,
+    tideSource: "data/tidedata.json",
+    thresholdMin: 4.5, // mètres
+    notes: "",
+  },
 ];
 
 export { POINTS };
