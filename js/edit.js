@@ -209,11 +209,12 @@ function vertexIcon() {
 
 const map = L.map('map');
 
-const ortholittorale = L.tileLayer.wms('https://geolittoral.din.developpement-durable.gouv.fr/wxs', {
-  layers: 'ortholittorale_v2_rvb',
-  format: 'image/png',
-  version: '1.3.0',
+// Tuiles pré-téléchargées et stockées dans le dépôt (zoom 12-17, zone Bréhat/Trégor).
+const ortholittorale = L.tileLayer('tiles/ortholittorale/{z}/{x}/{y}.jpg', {
+  minZoom: 12,
   maxZoom: 19,
+  maxNativeZoom: 17,
+  bounds: L.latLngBounds([48.774, -3.096], [48.918, -2.963]),
   attribution: 'GéoLittoral / SHOM-IGN — orthophotos littorales 2011-2014 (marée basse)',
 }).addTo(map);
 
