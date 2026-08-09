@@ -273,6 +273,15 @@ const POINTS = [
     thresholdMin: 4.5, // mètres
     notes: "",
   },
+  {
+    id: 'corps-mort-delafarge',
+    name: "Corps-mort Delafarge",
+    lat: 48.85361300957708,
+    lon: -3.0116427520130555,
+    tideSource: "data/tidedata.json",
+    thresholdMin: 2.2, // mètres
+    notes: "",
+  },
 ];
 
 export { POINTS };
