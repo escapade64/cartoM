@@ -282,6 +282,15 @@ const POINTS = [
     thresholdMin: 2.2, // mètres
     notes: "",
   },
+  {
+    id: 'seuil',
+    name: "Seuil",
+    lat: 48.86214068057547,
+    lon: -3.0469563475849153,
+    tideSource: "data/tidedata.json",
+    thresholdMin: 4.4, // mètres
+    notes: "",
+  },
 ];
 
 export { POINTS };
