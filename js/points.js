@@ -291,6 +291,15 @@ const POINTS = [
     thresholdMin: 4.4, // mètres
     notes: "",
   },
+  {
+    id: 'hauteur-de-la-butte',
+    name: "Hauteur de la butte",
+    lat: 48.85662690464339,
+    lon: -3.0515267225208835,
+    tideSource: "data/tidedata.json",
+    thresholdMin: 4.1, // mètres
+    notes: "",
+  },
 ];
 
 export { POINTS };
