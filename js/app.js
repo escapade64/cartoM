@@ -266,10 +266,11 @@ async function init() {
     )
     .addTo(map);
 
-  // Test : zone immergée en temps réel (une seule tuile Litto3D, secteur Pescadou).
+  // Zone immergée en temps réel (secteur couvert par le relevé Litto3D disponible).
+  // Chargement des données au moment où le calque est activé, pas avant.
   const floodTest = await loadFloodTestLayer(map);
   if (floodTest) {
-    layersControl.addOverlay(floodTest.overlay, 'Test : zone immergée (Pescadou)');
+    layersControl.addOverlay(floodTest.group, 'Praticabilité (seuil 0,5 m — secteur relevé)');
   }
 
   // Tracés de navigation issus d'un relevé terrain (chenaux, passages, contournements).

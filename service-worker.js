@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cartom-shell-v43';
+const CACHE_NAME = 'cartom-shell-v47';
 
 const PRECACHE_URLS = [
   './',
