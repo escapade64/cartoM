@@ -279,18 +279,18 @@ async function init() {
   }
 
   // Rochers repérés, avec leur nom affiché en permanence sur la carte.
+  const rockIcon = L.divIcon({
+    className: 'rock-marker',
+    html: '<svg viewBox="0 0 16 16" width="14" height="14"><polygon points="8,1 15,14 1,14" fill="rgba(217,48,37,0.55)" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round"/></svg>',
+    iconSize: [14, 14],
+    iconAnchor: [7, 12],
+  });
   for (const rock of ROCKS) {
-    const marker = L.circleMarker([rock.lat, rock.lon], {
-      radius: 4,
-      weight: 1,
-      color: '#5f4b32',
-      fillColor: '#8d7355',
-      fillOpacity: 1,
-    }).addTo(map);
+    const marker = L.marker([rock.lat, rock.lon], { icon: rockIcon }).addTo(map);
     marker.bindTooltip(rock.name, {
       permanent: true,
       direction: 'top',
-      offset: [0, -4],
+      offset: [0, -10],
       className: 'map-label rock-label',
     });
   }
