@@ -1,11 +1,14 @@
-const CACHE_NAME = 'cartom-shell-v41';
+const CACHE_NAME = 'cartom-shell-v42';
 
 const PRECACHE_URLS = [
   './',
   './index.html',
+  './planning.html',
   './manifest.json',
   './css/style.css',
+  './css/planning.css',
   './js/app.js',
+  './js/planning.js',
   './js/tide.js',
   './js/navlines.js',
   './js/rocks.js',

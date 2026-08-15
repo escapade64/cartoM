@@ -3,26 +3,25 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>CartoM – Points de passage à marée</title>
-  <meta name="description" content="Carte des points de passage nautiques, ouverts ou fermés selon la marée." />
+  <title>CartoM – Keranguilis Planning</title>
+  <meta name="description" content="Planning des marées à venir pour Keranguilis." />
   <meta name="theme-color" content="#0b5566" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
   <link rel="icon" href="icons/icon-192.png" />
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/planning.css" />
 </head>
 <body>
   <header class="app-header">
-    <h1><a href="planning.html">Keranguilis Live</a> <span id="current-tide"></span></h1>
+    <h1><a href="index.html">Keranguilis Planning</a></h1>
     <p id="last-update" class="last-update"></p>
   </header>
 
   <div id="data-warning" class="data-warning" hidden></div>
 
-  <div id="map"></div>
+  <main id="planning"></main>
 
-  <script src="vendor/leaflet/leaflet.js"></script>
-  <script type="module" src="js/app.js"></script>
+  <script type="module" src="js/planning.js"></script>
 </body>
 </html>

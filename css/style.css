@@ -29,6 +29,11 @@ body {
   font-size: 1.05rem;
 }
 
+.app-header h1 a {
+  color: inherit;
+  text-decoration: none;
+}
+
 .tide-extra {
   font-size: 0.7rem;
   font-weight: 400;
