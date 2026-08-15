@@ -3,6 +3,7 @@ import { NAV_LINES } from './navlines.js';
 import { ROCKS } from './rocks.js';
 import { LANDMARKS, DANGER_ZONES } from './landmarks.js';
 import { loadTideSeries, tideState, statusAt, nextTransitions, dataRangeEndsWithin } from './tide.js';
+import { loadFloodTestLayer } from './flood.js';
 
 const BREHAT_TIDE_SOURCE = 'data/tidedata.json';
 const BOAT_DRAFT_M = 0.3; // tirant d'eau du bateau, ajouté au seuil requis de chaque point
@@ -258,12 +259,18 @@ async function init() {
     attribution: '&copy; <a href="https://www.openseamap.org">OpenSeaMap</a>',
   });
 
-  L.control
+  const layersControl = L.control
     .layers(
       { 'Plan (OpenStreetMap)': osm, 'Photos aériennes à marée basse (2011-2014)': ortholittorale },
       { 'Balisage marin (OpenSeaMap)': seamarks }
     )
     .addTo(map);
+
+  // Test : zone immergée en temps réel (une seule tuile Litto3D, secteur Pescadou).
+  const floodTest = await loadFloodTestLayer(map);
+  if (floodTest) {
+    layersControl.addOverlay(floodTest.overlay, 'Test : zone immergée (Pescadou)');
+  }
 
   // Tracés de navigation issus d'un relevé terrain (chenaux, passages, contournements).
   // Affichés par défaut, pas dans le sélecteur de calques.
@@ -431,6 +438,7 @@ async function init() {
         `· ${brehat.height.toFixed(2)} m ` +
         `<span class="tide-extra">${arrow} ${directionLabel} · ${nextLabel} ${nextTimeTxt}</span>`;
     }
+    if (floodTest) floodTest.update(brehat.height);
 
     for (const point of POINTS) {
       const series = seriesByPoint.get(point.id);
