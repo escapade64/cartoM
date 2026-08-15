@@ -252,6 +252,21 @@ let drawingPolyline = null;
 
 const editorPanel = document.getElementById('editor-panel');
 
+// --- Suivi des modifications non publiées ---
+let dirty = false;
+function markDirty() {
+  dirty = true;
+  updateDirtyState();
+}
+function clearDirty() {
+  dirty = false;
+  updateDirtyState();
+}
+function updateDirtyState() {
+  const btn = document.getElementById('publish-all-btn');
+  if (btn) btn.classList.toggle('dirty', dirty);
+}
+
 function createItemMarker(type, item) {
   const marker = L.marker([item.lat, item.lon], {
     draggable: true,
@@ -266,6 +281,7 @@ function createItemMarker(type, item) {
     const { lat, lng } = marker.getLatLng();
     item.lat = lat;
     item.lon = lng;
+    markDirty();
     if (uiState.mode === 'edit-item' && uiState.item === item) renderEditor();
   });
   item._marker = marker;
@@ -335,6 +351,7 @@ function deleteItem(type, item) {
   const arr = STORES[type];
   const idx = arr.indexOf(item);
   if (idx !== -1) arr.splice(idx, 1);
+  markDirty();
   uiState = { mode: 'idle' };
   renderEditor();
 }
@@ -354,6 +371,7 @@ function renderVertices(line) {
       const { lat, lng } = vm.getLatLng();
       line.path[vi] = [lat, lng];
       line._polyline.setLatLngs(line.path);
+      markDirty();
     });
     vm.on('click', () => {
       if (line.path.length <= 2) {
@@ -362,6 +380,7 @@ function renderVertices(line) {
       }
       line.path.splice(vi, 1);
       line._polyline.setLatLngs(line.path);
+      markDirty();
       renderVertices(line);
       renderEditor();
     });
@@ -374,6 +393,7 @@ function deleteNavline(line) {
   clearVertices(line);
   const idx = navlinesData.indexOf(line);
   if (idx !== -1) navlinesData.splice(idx, 1);
+  markDirty();
   uiState = { mode: 'idle' };
   renderEditor();
 }
@@ -407,6 +427,7 @@ function finishNewNavline() {
   map.removeLayer(drawingPolyline);
   drawingPath = null;
   drawingPolyline = null;
+  markDirty();
   selectNavline(line);
   editorPanel.querySelector('input')?.focus();
 }
@@ -427,6 +448,7 @@ function createNewItem(type) {
         : { name: '', lat: latlng.lat, lon: latlng.lng, notes: '' };
   STORES[type].push(item);
   createItemMarker(type, item);
+  markDirty();
   uiState = { mode: 'edit-item', type, item };
   renderEditor();
   editorPanel.querySelector('input')?.focus();
@@ -444,6 +466,7 @@ map.on('click', (e) => {
   if (uiState.mode === 'edit-navline' && uiState.addingVertex) {
     uiState.line.path.push([e.latlng.lat, e.latlng.lng]);
     uiState.line._polyline.setLatLngs(uiState.line.path);
+    markDirty();
     renderVertices(uiState.line);
     renderEditor();
     return;
@@ -474,10 +497,12 @@ function renderItemForm(type, item) {
         const v = parseFloat(input.value);
         item[field.key] = Number.isFinite(v) ? v : 0;
         if (field.key === 'lat' || field.key === 'lon') item._marker.setLatLng([item.lat, item.lon]);
+        markDirty();
       });
     } else {
       input.addEventListener('input', () => {
         item[field.key] = input.value;
+        markDirty();
       });
     }
     nodes.push(el('label', { textContent: field.label }, [input]));
@@ -499,10 +524,12 @@ function renderNavlineForm(line) {
   const nameInput = el('input', { type: 'text', value: line.name, placeholder: 'Nom de la ligne' });
   nameInput.addEventListener('input', () => {
     line.name = nameInput.value;
+    markDirty();
   });
   const notesInput = el('input', { type: 'text', value: line.notes, placeholder: 'Notes' });
   notesInput.addEventListener('input', () => {
     line.notes = notesInput.value;
+    markDirty();
   });
 
   const addVertexBtn = el('button', {
@@ -688,5 +715,6 @@ publishAllBtn.addEventListener('click', async () => {
     }
   }
   publishAllStatus.textContent = results.join(' · ');
+  if (results.every((r) => r.includes('✓'))) clearDirty();
   publishAllBtn.disabled = false;
 });

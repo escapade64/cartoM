@@ -53,9 +53,10 @@ body {
   font-size: 0.75rem;
 }
 
-#publish-all-btn {
+#publish-all-btn.dirty {
   background: #1e8e3e;
   border-color: #1e8e3e;
+  font-weight: 600;
 }
 
 #publish-all-btn:disabled {
