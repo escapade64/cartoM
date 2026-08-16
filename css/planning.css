@@ -68,6 +68,35 @@
   opacity: 0.85;
 }
 
+.wind {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.wind-arrow {
+  display: inline-block;
+  color: #5f6368;
+  flex-shrink: 0;
+}
+
+.wind-speed {
+  font-weight: 700;
+}
+
+.wind-credit {
+  font-size: 0.7rem;
+  opacity: 0.6;
+  text-align: center;
+  margin: 0 0 0.75rem;
+}
+
+.wind-credit a {
+  color: inherit;
+}
+
 @media (prefers-color-scheme: dark) {
   .day-block {
     border-color: #444;
@@ -78,5 +107,8 @@
   .passage-line {
     background: #2a2b2e;
     color: #e8eaed;
+  }
+  .wind-arrow {
+    color: #9aa0a6;
   }
 }

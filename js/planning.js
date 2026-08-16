@@ -4,6 +4,7 @@ import { loadTideSeries, statusAt, nextTransitions, dataRangeEndsWithin } from '
 const BREHAT_TIDE_SOURCE = 'data/tidedata.json';
 const BOAT_DRAFT_M = 0.3; // même valeur que index.html — tirant d'eau du bateau
 const DAYS_AHEAD = 14;
+const WIND_API = 'https://api.open-meteo.com/v1/forecast';
 
 const dateFmt = new Intl.DateTimeFormat('fr-FR', {
   timeZone: 'Europe/Paris',
@@ -24,6 +25,66 @@ function formatDate(ms) {
 
 function formatTime(ms) {
   return timeFmt.format(new Date(ms));
+}
+
+const hourKeyFmt = new Intl.DateTimeFormat('fr-FR', {
+  timeZone: 'Europe/Paris',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  hour12: false,
+});
+
+// Clé "YYYY-MM-DDTHH:00" en heure locale Europe/Paris (heure tronquée), pour
+// faire correspondre un instant à l'entrée horaire du vent d'Open-Meteo.
+function hourKey(ms) {
+  const parts = Object.fromEntries(hourKeyFmt.formatToParts(ms).map((p) => [p.type, p.value]));
+  const hour = parts.hour === '24' ? '00' : parts.hour;
+  return `${parts.year}-${parts.month}-${parts.day}T${hour}:00`;
+}
+
+// Vent prévu (Open-Meteo, gratuit, sans clé) à la position donnée, sur DAYS_AHEAD jours.
+// Retourne une Map "YYYY-MM-DDTHH:00" -> { speed, direction } ou null si indisponible.
+async function loadWindData(lat, lon) {
+  const url =
+    `${WIND_API}?latitude=${lat}&longitude=${lon}` +
+    `&hourly=wind_speed_10m,wind_direction_10m&wind_speed_unit=kn` +
+    `&timezone=Europe%2FParis&forecast_days=${DAYS_AHEAD}`;
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) return null;
+    const json = await resp.json();
+    const { time, wind_speed_10m: speeds, wind_direction_10m: directions } = json.hourly;
+    const map = new Map();
+    for (let i = 0; i < time.length; i++) {
+      map.set(time[i], { speed: speeds[i], direction: directions[i] });
+    }
+    return map;
+  } catch {
+    return null;
+  }
+}
+
+function windSpeedColor(speedKt) {
+  if (speedKt <= 10) return '#1e8e3e';
+  if (speedKt <= 15) return '#f9ab00';
+  if (speedKt <= 20) return '#ff6d00';
+  return '#d93025';
+}
+
+function windHtml(windMap, ms) {
+  const wind = windMap ? windMap.get(hourKey(ms)) : null;
+  if (!wind) return '';
+  const rotation = (wind.direction + 180) % 360;
+  const speed = Math.round(wind.speed);
+  return (
+    `<span class="wind">` +
+    `<svg class="wind-arrow" viewBox="0 0 24 24" width="14" height="14" style="transform:rotate(${rotation}deg)">` +
+    `<polygon points="12,2 20,20 12,15 4,20" fill="currentColor"/></svg>` +
+    `<span class="wind-speed" style="color:${windSpeedColor(speed)}">${speed} nd</span>` +
+    `</span>`
+  );
 }
 
 function showDataWarning(message) {
@@ -76,10 +137,10 @@ function formatPassage(series, dayStart, dayEnd, thresholdMin) {
     if (endsAtDayEnd) return `à partir de ${formatTime(start)}`;
     return `de ${formatTime(start)} à ${formatTime(end)}`;
   });
-  return `ouvert ${parts.join(' et ')}`;
+  return parts.join(' et ');
 }
 
-function buildDayBlock(series, pescadou, dayStartMs, dayEndMs) {
+function buildDayBlock(series, pescadou, windMap, dayStartMs, dayEndMs) {
   const section = document.createElement('section');
   section.className = 'day-block';
 
@@ -91,9 +152,7 @@ function buildDayBlock(series, pescadou, dayStartMs, dayEndMs) {
     const threshold = pescadou.thresholdMin + BOAT_DRAFT_M;
     const p = document.createElement('p');
     p.className = 'passage-line';
-    p.innerHTML =
-      `<strong>${pescadou.name}</strong> (seuil ${pescadou.thresholdMin.toFixed(2)} m + ${BOAT_DRAFT_M.toFixed(2)} m tirant d'eau) : ` +
-      formatPassage(series, dayStartMs, dayEndMs, threshold);
+    p.innerHTML = `<strong>Mouillage</strong> : ${formatPassage(series, dayStartMs, dayEndMs, threshold)}`;
     section.appendChild(p);
   }
 
@@ -113,7 +172,8 @@ function buildDayBlock(series, pescadou, dayStartMs, dayEndMs) {
     li.innerHTML =
       `<span class="tide-type ${typeClass}">${typeLabel}</span>` +
       `<span class="tide-time">${formatTime(t)}</span>` +
-      `<span class="tide-height">${h.toFixed(2)} m</span>`;
+      `<span class="tide-height">${h.toFixed(2)} m</span>` +
+      windHtml(windMap, t);
     ul.appendChild(li);
   }
   if (!found) {
@@ -129,6 +189,7 @@ function buildDayBlock(series, pescadou, dayStartMs, dayEndMs) {
 async function init() {
   const series = await loadTideSeries(BREHAT_TIDE_SOURCE);
   const pescadou = POINTS.find((p) => p.id === 'mouillage-pescadou');
+  const windMap = pescadou ? await loadWindData(pescadou.lat, pescadou.lon) : null;
 
   const container = document.getElementById('planning');
   const now = new Date();
@@ -139,7 +200,7 @@ async function init() {
     dayStart.setDate(dayStart.getDate() + d);
     const dayStartMs = dayStart.getTime();
     const dayEndMs = dayStartMs + 24 * 3600 * 1000;
-    container.appendChild(buildDayBlock(series, pescadou, dayStartMs, dayEndMs));
+    container.appendChild(buildDayBlock(series, pescadou, windMap, dayStartMs, dayEndMs));
   }
 
   if (dataRangeEndsWithin(series, Date.now(), 7)) {
