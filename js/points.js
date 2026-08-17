@@ -27,7 +27,7 @@ const POINTS = [
     lat: 48.86640858003744,
     lon: -3.0337930108136613,
     tideSource: "data/tidedata.json",
-    thresholdMin: 5.4, // mètres
+    thresholdMin: 4.7, // mètres
     notes: "",
   },
   {
