@@ -21,6 +21,7 @@ const LANDMARKS = [
   { name: "Ile Vierge", lat: 48.8670469359267, lon: -3.0566622994162866, notes: "" },
   { name: "Rocher d'Oscar", lat: 48.86479930365201, lon: -3.0480195111769386, notes: "" },
   { name: "Mouillage des araignées", lat: 48.87997440917519, lon: -3.0507002476064975, notes: "" },
+  { name: "Homard land", lat: 48.86907169657771, lon: -3.043534774757728, notes: "" },
 ];
 
 // Polygones de danger : { name, path: [[lat, lon], ...] }.
