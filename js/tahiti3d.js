@@ -117,6 +117,10 @@ async function init() {
   const loadingEl = document.getElementById('scene-loading');
   const legendEl = document.getElementById('scene-legend');
   const tideHeightEl = document.getElementById('scene-tide-height');
+  const waterControlEl = document.getElementById('scene-water-control');
+  const waterSlider = document.getElementById('water-slider');
+  const waterValueEl = document.getElementById('water-value');
+  const waterResetBtn = document.getElementById('water-reset');
 
   let floodData;
   try {
@@ -188,25 +192,45 @@ async function init() {
 
   loadingEl.hidden = true;
   legendEl.hidden = false;
+  waterControlEl.hidden = false;
 
-  // Marée courante : simple plan translucide donnant le niveau d'eau actuel, en
-  // repère sur le relief statique (pas de rafraîchissement temps réel dans ce test).
+  // Plan d'eau translucide, dont la hauteur peut être ajustée à la main via le
+  // curseur (indépendamment de la marée réelle, pour explorer le relief à
+  // différents niveaux d'immersion).
+  const waterGeo = new THREE.PlaneGeometry(HALF_EXTENT_M * 2.4, HALF_EXTENT_M * 2.4);
+  waterGeo.rotateX(-Math.PI / 2);
+  const waterMat = new THREE.MeshStandardMaterial({
+    color: 0x4aa3d9,
+    transparent: true,
+    opacity: 0.45,
+    roughness: 0.1,
+  });
+  const water = new THREE.Mesh(waterGeo, waterMat);
+  scene.add(water);
+
+  let currentTideHeight = null;
+
+  function setWaterHeight(h) {
+    water.position.y = h * VERTICAL_EXAGGERATION;
+    waterValueEl.textContent = `${h.toFixed(2)} m`;
+    waterSlider.value = h;
+  }
+
+  setWaterHeight(3); // valeur de départ raisonnable en attendant la marée réelle
+  waterSlider.addEventListener('input', () => setWaterHeight(parseFloat(waterSlider.value)));
+  waterResetBtn.addEventListener('click', () => {
+    if (currentTideHeight !== null) setWaterHeight(currentTideHeight);
+  });
+
+  // Marée courante : sert à afficher la référence dans la légende et à
+  // initialiser le curseur, mais ne se rafraîchit pas en direct dans ce test.
   loadTideSeries(BREHAT_TIDE_SOURCE)
     .then((series) => {
       const { height } = tideState(series, Date.now());
       if (height === null) return;
+      currentTideHeight = height;
       tideHeightEl.textContent = `${height.toFixed(2)} m`;
-      const waterGeo = new THREE.PlaneGeometry(HALF_EXTENT_M * 2.4, HALF_EXTENT_M * 2.4);
-      waterGeo.rotateX(-Math.PI / 2);
-      const waterMat = new THREE.MeshStandardMaterial({
-        color: 0x4aa3d9,
-        transparent: true,
-        opacity: 0.45,
-        roughness: 0.1,
-      });
-      const water = new THREE.Mesh(waterGeo, waterMat);
-      water.position.y = height * VERTICAL_EXAGGERATION;
-      scene.add(water);
+      setWaterHeight(height);
     })
     .catch(() => {
       tideHeightEl.textContent = 'indisponible';

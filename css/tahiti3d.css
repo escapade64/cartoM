@@ -68,8 +68,48 @@
 .swatch-rock { background: #6b8f5a; }
 .swatch-water { background: #4aa3d9; opacity: 0.6; }
 
+.scene-water-control[hidden] {
+  display: none;
+}
+
+.scene-water-control {
+  position: absolute;
+  right: 0.6rem;
+  bottom: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 6px;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.75rem;
+  color: #202124;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  width: 200px;
+}
+
+.scene-water-control input[type='range'] {
+  width: 100%;
+}
+
+.scene-water-control button {
+  align-self: flex-start;
+  border: none;
+  background: #0b5566;
+  color: #fff;
+  border-radius: 4px;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+
+.scene-water-control button:active {
+  background: #08414d;
+}
+
 @media (prefers-color-scheme: dark) {
-  .scene-legend {
+  .scene-legend,
+  .scene-water-control {
     background: rgba(32, 33, 36, 0.9);
     color: #e8eaed;
   }
