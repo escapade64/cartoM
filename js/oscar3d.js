@@ -1,14 +1,14 @@
-// Test de rendu 3D (backlog #1) autour de Tahiti Express. Voir js/terrain3d.js
+// Test de rendu 3D (backlog #1) autour du Rocher d'Oscar. Voir js/terrain3d.js
 // pour le moteur commun (Three.js + Litto3D).
 
 import { initTerrain3D } from './terrain3d.js';
 
 initTerrain3D({
-  terrainUrl: 'data/tahiti3d.json',
-  center: { lat: 48.86640858003744, lon: -3.0337930108136613 },
+  terrainUrl: 'data/oscar3d.json',
+  center: { lat: 48.86479930365201, lon: -3.0480195111769386 },
   halfExtentM: 340, // zone de 680 x 680 m (donnée source : 700 x 700 m à 1 m/px)
   gridN: 220,
-  notFoundLabel: 'Tahiti Express',
+  notFoundLabel: "Rocher d'Oscar",
 }).catch((err) => {
   console.error(err);
   document.getElementById('scene-loading').hidden = false;

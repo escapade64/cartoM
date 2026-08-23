@@ -370,7 +370,10 @@ async function init() {
       offset: [0, -5],
       className: 'map-label landmark-label',
     });
-    if (landmark.notes) marker.bindPopup(`<strong>${landmark.name}</strong><br>${landmark.notes}`);
+    const landmark3dLink = landmark.name === "Rocher d'Oscar" ? '<div class="notes"><a href="oscar3d.html">Vision 3D (test) →</a></div>' : '';
+    if (landmark.notes || landmark3dLink) {
+      marker.bindPopup(`<strong>${landmark.name}</strong>${landmark.notes ? `<br>${landmark.notes}` : ''}${landmark3dLink}`);
+    }
   }
 
   // Zones de danger.
