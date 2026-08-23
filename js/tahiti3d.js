@@ -14,8 +14,8 @@ import { loadTideSeries, tideState } from './tide.js';
 const TERRAIN_URL = 'data/tahiti3d.json';
 const BREHAT_TIDE_SOURCE = 'data/tidedata.json';
 const CENTER = { lat: 48.86640858003744, lon: -3.0337930108136613 }; // Tahiti Express
-const HALF_EXTENT_M = 180; // zone de 360 x 360 m autour du point
-const GRID_N = 96; // échantillons par côté
+const HALF_EXTENT_M = 340; // zone de 680 x 680 m autour du point (donnée source : 700 x 700 m à 1 m/px)
+const GRID_N = 220; // échantillons par côté du maillage 3D
 const VERTICAL_EXAGGERATION = 2;
 
 const M_PER_DEG_LAT = 111320;
@@ -138,7 +138,7 @@ async function init() {
   scene.background = new THREE.Color(0xcfe8f2);
 
   const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 5000);
-  camera.position.set(0, 140, 260);
+  camera.position.set(0, HALF_EXTENT_M * 0.75, HALF_EXTENT_M * 1.4);
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -182,7 +182,7 @@ async function init() {
   controls.enableDamping = true;
   controls.dampingFactor = 0.08;
   controls.minDistance = 20;
-  controls.maxDistance = 900;
+  controls.maxDistance = HALF_EXTENT_M * 4;
   controls.maxPolarAngle = Math.PI / 2 - 0.02;
   controls.update();
 
