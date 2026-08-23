@@ -3,7 +3,7 @@ import { NAV_LINES } from './navlines.js';
 import { ROCKS } from './rocks.js';
 import { LANDMARKS, DANGER_ZONES } from './landmarks.js';
 import { loadTideSeries, tideState, statusAt, nextTransitions, dataRangeEndsWithin } from './tide.js';
-import { loadFloodTestLayer } from './flood.js';
+import { loadFloodTestLayer, loadFloodData, sampleElevation, MIN_DEPTH_M } from './flood.js';
 
 const BREHAT_TIDE_SOURCE = 'data/tidedata.json';
 const BOAT_DRAFT_M = 0.3; // tirant d'eau du bateau, ajouté au seuil requis de chaque point
@@ -93,11 +93,30 @@ function showDataWarning(message) {
 // centre la carte et démarre le suivi continu (le point bleu se déplace avec
 // vous sans reforcer le recentrage, pour ne pas gêner si vous consultez
 // d'autres points pendant que vous naviguez). Deuxième clic : arrête le suivi.
-function addLocateControl(map) {
+function addLocateControl(map, brehatSeries) {
   let marker = null;
   let accuracyCircle = null;
   let watching = false;
   let awaitingFirstFix = false;
+  let floodData = null;
+
+  // Profondeur sous le bateau : altitude Litto3D à la position GPS courante,
+  // comparée à la hauteur de marée courante à Bréhat. Hors de la zone relevée
+  // (voir data/flood.json), pas d'étiquette affichée.
+  function updateDepthTooltip(latlng) {
+    if (!marker) return;
+    const elevZH = floodData ? sampleElevation(floodData, latlng.lat, latlng.lng) : null;
+    const brehat = elevZH !== null ? tideState(brehatSeries, Date.now()) : null;
+    if (elevZH === null || !brehat || brehat.height === null) {
+      if (marker.getTooltip()) marker.unbindTooltip();
+      return;
+    }
+    const depth = brehat.height - elevZH;
+    const color = depth <= MIN_DEPTH_M ? STATUS_COLOR.closed : STATUS_COLOR.open;
+    const label = `<span style="color:${color}">Profondeur : ${depth.toFixed(2)} m</span>`;
+    if (marker.getTooltip()) marker.setTooltipContent(label);
+    else marker.bindTooltip(label, { permanent: true, direction: 'right', offset: [10, 0], className: 'depth-label' });
+  }
 
   const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-locate');
 
@@ -168,6 +187,11 @@ function addLocateControl(map) {
         fillOpacity: 0.12,
       }).addTo(map);
     }
+
+    loadFloodData().then((data) => {
+      floodData = data;
+      updateDepthTooltip(e.latlng);
+    });
   });
 
   map.on('locationerror', (e) => {
@@ -375,7 +399,6 @@ async function init() {
     updatePointLabels();
   }
 
-  addLocateControl(map);
   addWakeLockControl(map);
 
   const initialPoint = POINTS.find((p) => p.id === 'mouillage-pescadou');
@@ -397,6 +420,7 @@ async function init() {
   );
 
   const brehatSeries = await loadTideSeries(BREHAT_TIDE_SOURCE);
+  addLocateControl(map, brehatSeries);
 
   const markers = new Map();
   for (const point of POINTS) {

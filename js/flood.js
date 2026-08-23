@@ -11,15 +11,52 @@ const MIN_DEPTH_M = 0.5; // seuil de praticabilité, indépendant du tirant d'ea
 const COLOR_TOO_SHALLOW = [217, 48, 37, 130]; // 0 < profondeur <= seuil
 const COLOR_NAVIGABLE = [30, 142, 62, 130]; // profondeur > seuil
 
+// Chargement paresseux et mis en cache : la même grille (quelques Mo) sert à la
+// fois au calque de praticabilité et à la profondeur sous le bateau, récupérée
+// une seule fois quel que soit ce qui la déclenche en premier.
+let floodDataPromise = null;
+function loadFloodData() {
+  if (!floodDataPromise) {
+    floodDataPromise = fetch(FLOOD_URL)
+      .then((resp) => (resp.ok ? resp.json() : null))
+      .catch(() => null);
+  }
+  return floodDataPromise;
+}
+
+// Altitude interpolée (zéro hydrographique) à une position quelconque, par
+// interpolation bilinéaire dans la grille. Retourne null si hors couverture
+// ou si la position tombe sur une cellule sans donnée.
+function sampleElevation(data, lat, lon) {
+  if (!data || lat < data.south || lat > data.north || lon < data.west || lon > data.east) return null;
+  const { west, south, east, north, ncols, nrows, heights } = data;
+  const colF = ((lon - west) / (east - west)) * (ncols - 1);
+  const rowF = ((north - lat) / (north - south)) * (nrows - 1);
+  const c0 = Math.floor(colF);
+  const r0 = Math.floor(rowF);
+  const c1 = Math.min(c0 + 1, ncols - 1);
+  const r1 = Math.min(r0 + 1, nrows - 1);
+  const fc = colF - c0;
+  const fr = rowF - r0;
+  const v00 = heights[r0][c0];
+  const v01 = heights[r0][c1];
+  const v10 = heights[r1][c0];
+  const v11 = heights[r1][c1];
+  if (v00 === null || v01 === null || v10 === null || v11 === null) return null;
+  return v00 * (1 - fc) * (1 - fr) + v01 * fc * (1 - fr) + v10 * (1 - fc) * fr + v11 * fc * fr;
+}
+
 async function loadFloodTestLayer(map) {
-  let manifestOk;
+  // Vérifie juste que le fichier existe (HEAD, léger) sans télécharger les
+  // quelques Mo de données tant que le calque n'est pas activé.
+  let available;
   try {
     const resp = await fetch(FLOOD_URL, { method: 'HEAD' });
-    manifestOk = resp.ok;
+    available = resp.ok;
   } catch {
-    manifestOk = false;
+    available = false;
   }
-  if (!manifestOk) return null;
+  if (!available) return null;
 
   let data = null;
   let canvas = null;
@@ -57,9 +94,9 @@ async function loadFloodTestLayer(map) {
 
   function ensureLoaded() {
     if (loading) return loading;
-    loading = fetch(FLOOD_URL)
-      .then((resp) => resp.json())
+    loading = loadFloodData()
       .then((json) => {
+        if (!json) throw new Error('flood.json indisponible');
         data = json;
         canvas = document.createElement('canvas');
         canvas.width = data.ncols;
@@ -85,4 +122,4 @@ async function loadFloodTestLayer(map) {
   return { overlay, update };
 }
 
-export { loadFloodTestLayer };
+export { loadFloodTestLayer, loadFloodData, sampleElevation, MIN_DEPTH_M };
