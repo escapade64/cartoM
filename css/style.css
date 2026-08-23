@@ -92,6 +92,10 @@ body {
   50% { opacity: 0.35; }
 }
 
+.position-marker .heading-arrow {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
 .map-label {
   background: transparent;
   border: none;

@@ -100,6 +100,38 @@ function addLocateControl(map, brehatSeries) {
   let awaitingFirstFix = false;
   let floodData = null;
 
+  // Icône position : point + petite flèche de cap, orientée via une simple
+  // rotation CSS plutôt que de faire tourner toute la carte (Leaflet ne
+  // supporte pas nativement la rotation de carte).
+  function positionIcon() {
+    return L.divIcon({
+      className: 'position-marker',
+      html:
+        '<svg viewBox="0 0 24 24" width="24" height="24">' +
+        '<polygon class="heading-arrow" points="12,1 18,12 6,12" style="transform-origin:12px 14px; opacity:0;" fill="#1a73e8" stroke="#fff" stroke-width="1"/>' +
+        '<circle cx="12" cy="14" r="5" fill="#1a73e8" stroke="#fff" stroke-width="2"/>' +
+        '</svg>',
+      iconSize: [24, 24],
+      iconAnchor: [12, 14],
+    });
+  }
+
+  // Cap fourni directement par l'API de géolocalisation (degrés depuis le
+  // nord vrai, sens horaire) — disponible en général en mouvement sur l'eau.
+  // Masque la flèche si le cap est indisponible (à l'arrêt, ou appareil sans
+  // cette info) plutôt que d'afficher une direction non fiable.
+  function updateHeadingArrow(headingDeg) {
+    if (!marker || !marker._icon) return;
+    const arrow = marker._icon.querySelector('.heading-arrow');
+    if (!arrow) return;
+    if (headingDeg === null || headingDeg === undefined || Number.isNaN(headingDeg)) {
+      arrow.style.opacity = '0';
+    } else {
+      arrow.style.opacity = '1';
+      arrow.style.transform = `rotate(${headingDeg}deg)`;
+    }
+  }
+
   // Profondeur sous le bateau : altitude Litto3D à la position GPS courante,
   // comparée à la hauteur de marée courante à Bréhat. Hors de la zone relevée
   // (voir data/flood.json), pas d'étiquette affichée.
@@ -172,13 +204,7 @@ function addLocateControl(map, brehatSeries) {
       marker.setLatLng(e.latlng);
       accuracyCircle.setLatLng(e.latlng).setRadius(e.accuracy);
     } else {
-      marker = L.circleMarker(e.latlng, {
-        radius: 7,
-        weight: 2,
-        color: '#ffffff',
-        fillColor: '#1a73e8',
-        fillOpacity: 1,
-      }).addTo(map);
+      marker = L.marker(e.latlng, { icon: positionIcon(), interactive: false }).addTo(map);
       accuracyCircle = L.circle(e.latlng, {
         radius: e.accuracy,
         weight: 1,
@@ -187,6 +213,7 @@ function addLocateControl(map, brehatSeries) {
         fillOpacity: 0.12,
       }).addTo(map);
     }
+    updateHeadingArrow(e.heading);
 
     loadFloodData().then((data) => {
       floodData = data;
