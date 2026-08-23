@@ -353,6 +353,9 @@ async function init() {
       offset: [0, -10],
       className: 'map-label rock-label',
     });
+    if (rock.name === 'Rocher en 8') {
+      marker.bindPopup(`<strong>${rock.name}</strong><div class="notes"><a href="rocheren8-3d.html">Vision 3D (test) →</a></div>`);
+    }
   }
 
   // Points de repère (plages, mouillages, lieux-dits).
