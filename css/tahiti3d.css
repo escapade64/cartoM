@@ -1,0 +1,75 @@
+#scene-container {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  background: #cfe8f2;
+}
+
+#scene-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+#scene-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  color: #0b5566;
+  background: #cfe8f2;
+}
+
+.scene-legend {
+  position: absolute;
+  left: 0.6rem;
+  bottom: 0.6rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 6px;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.75rem;
+  color: #202124;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  max-width: 220px;
+}
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.1rem 0;
+}
+
+.water-row {
+  margin-top: 0.3rem;
+  padding-top: 0.3rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.swatch {
+  display: inline-block;
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 2px;
+  flex: 0 0 auto;
+}
+
+.swatch-deep { background: #0b3d6b; }
+.swatch-shallow { background: #2f8fc2; }
+.swatch-intertidal { background: #d9b36c; }
+.swatch-rock { background: #6b8f5a; }
+.swatch-water { background: #4aa3d9; opacity: 0.6; }
+
+@media (prefers-color-scheme: dark) {
+  .scene-legend {
+    background: rgba(32, 33, 36, 0.9);
+    color: #e8eaed;
+  }
+  .water-row {
+    border-top-color: rgba(255, 255, 255, 0.15);
+  }
+}

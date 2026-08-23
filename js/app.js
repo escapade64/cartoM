@@ -72,6 +72,7 @@ function buildPopupHtml(point, info) {
       <div>Seuil requis : <strong>${point.thresholdMin.toFixed(2)} m + ${BOAT_DRAFT_M.toFixed(2)} m</strong> (tirant d'eau)</div>
       ${transitionsHtml}
       ${point.notes ? `<div class="notes">${point.notes}</div>` : ''}
+      ${point.id === 'tahiti-express' ? '<div class="notes"><a href="tahiti3d.html">Vision 3D (test) →</a></div>' : ''}
     </div>
   `;
 }
