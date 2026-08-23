@@ -1,14 +1,17 @@
 // Test de rendu 3D (backlog #1) : relief du fond marin sur une petite zone autour
-// du point "Tahiti Express", à partir de la même grille Litto3D fusionnée que le
-// calque de praticabilité (data/flood.json, déjà en hauteurs zéro hydrographique).
-// Réutilise flood.js (sampleElevation) et tide.js (marée courante) sans dupliquer
-// de logique.
+// du point "Tahiti Express". Utilise data/tahiti3d.json, une petite sous-fenêtre
+// (quelques dizaines de Ko) découpée à l'avance dans la grille Litto3D fusionnée
+// data/flood.json (déjà en hauteurs zéro hydrographique) : la page 3D n'a besoin
+// que d'un carré de 500 m de côté, inutile de charger les 5 Mo complets.
+// Réutilise sampleElevation() de flood.js et tide.js (marée courante) sans
+// dupliquer de logique.
 
 import * as THREE from '../vendor/three/three.module.js';
 import { OrbitControls } from '../vendor/three/examples/jsm/controls/OrbitControls.js';
-import { loadFloodData, sampleElevation } from './flood.js';
+import { sampleElevation } from './flood.js';
 import { loadTideSeries, tideState } from './tide.js';
 
+const TERRAIN_URL = 'data/tahiti3d.json';
 const BREHAT_TIDE_SOURCE = 'data/tidedata.json';
 const CENTER = { lat: 48.86640858003744, lon: -3.0337930108136613 }; // Tahiti Express
 const HALF_EXTENT_M = 180; // zone de 360 x 360 m autour du point
@@ -115,9 +118,13 @@ async function init() {
   const legendEl = document.getElementById('scene-legend');
   const tideHeightEl = document.getElementById('scene-tide-height');
 
-  const floodData = await loadFloodData();
-  if (!floodData) {
-    showError('Données de relief indisponibles (data/flood.json non chargé).');
+  let floodData;
+  try {
+    const resp = await fetch(TERRAIN_URL);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    floodData = await resp.json();
+  } catch (err) {
+    showError('Données de relief indisponibles (data/tahiti3d.json non chargé).');
     return;
   }
 
