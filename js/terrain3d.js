@@ -230,17 +230,6 @@ async function initTerrain3D(options) {
   grid.material.transparent = true;
   scene.add(grid);
 
-  // Repère nord (la grille locale est alignée est/nord vrai, comme flood.js).
-  const north = new THREE.ArrowHelper(
-    new THREE.Vector3(0, 0, -1),
-    new THREE.Vector3(0, 2, halfExtentM - 10),
-    30,
-    0xd93025,
-    10,
-    6
-  );
-  scene.add(north);
-
   const ambient = new THREE.AmbientLight(0xffffff, 0.65);
   const sun = new THREE.DirectionalLight(0xffffff, 0.9);
   sun.position.set(-120, 200, 100);
