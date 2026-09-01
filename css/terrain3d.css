@@ -41,6 +41,10 @@
   max-width: 220px;
 }
 
+.legend-row[hidden] {
+  display: none;
+}
+
 .legend-row {
   display: flex;
   align-items: center;

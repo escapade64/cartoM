@@ -43,10 +43,12 @@ function colorForElevation(e) {
   return COLOR_STOPS[COLOR_STOPS.length - 1][1];
 }
 
-function buildTerrain(floodData, center, halfExtentM, gridN, mPerDegLon) {
+function buildTerrain(floodData, center, halfExtentM, gridN, mPerDegLon, orthoTexture) {
   const positions = new Float32Array(gridN * gridN * 3);
   const colors = new Float32Array(gridN * gridN * 3);
+  const uvs = new Float32Array(gridN * gridN * 2);
   const valid = new Uint8Array(gridN * gridN);
+  const { west, east, south, north } = floodData;
 
   for (let j = 0; j < gridN; j++) {
     for (let i = 0; i < gridN; i++) {
@@ -60,6 +62,8 @@ function buildTerrain(floodData, center, halfExtentM, gridN, mPerDegLon) {
       positions[p] = fx;
       positions[p + 1] = e === null ? 0 : e * VERTICAL_EXAGGERATION;
       positions[p + 2] = -fy;
+      uvs[idx * 2] = (lon - west) / (east - west);
+      uvs[idx * 2 + 1] = (lat - south) / (north - south);
       if (e !== null) {
         valid[idx] = 1;
         const [r, g, b] = colorForElevation(e);
@@ -85,22 +89,90 @@ function buildTerrain(floodData, center, halfExtentM, gridN, mPerDegLon) {
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
   geometry.setIndex(indices);
   geometry.computeVertexNormals();
 
-  const material = new THREE.MeshStandardMaterial({
-    vertexColors: true,
-    side: THREE.DoubleSide,
-    roughness: 0.95,
-    metalness: 0,
-  });
+  const material = orthoTexture
+    ? new THREE.MeshStandardMaterial({ map: orthoTexture, side: THREE.DoubleSide, roughness: 1, metalness: 0 })
+    : new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide, roughness: 0.95, metalness: 0 });
 
   return { mesh: new THREE.Mesh(geometry, material), hasData: indices.length > 0 };
 }
 
-// options: { terrainUrl, center: {lat,lon}, halfExtentM, gridN, notFoundLabel }
+// Compose une texture à partir des tuiles orthophoto pré-téléchargées
+// (tiles/ortholittorale/{z}/{x}/{y}.jpg, même source que le calque 2D de
+// index.html), recadrée exactement sur l'emprise [west,south,east,north].
+const ORTHO_MAX_ZOOM = 17;
+const TILE_SIZE = 256;
+
+function lon2tileX(lon, z) {
+  return ((lon + 180) / 360) * 2 ** z;
+}
+
+function lat2tileY(lat, z) {
+  const rad = (lat * Math.PI) / 180;
+  return ((1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2) * 2 ** z;
+}
+
+function loadImage(url) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null); // tuile manquante : on laisse la zone transparente
+    img.src = url;
+  });
+}
+
+async function buildOrthoTexture(bounds, outputSize = 1024) {
+  const { west, east, south, north } = bounds;
+  const z = ORTHO_MAX_ZOOM;
+  const xF0 = lon2tileX(west, z);
+  const xF1 = lon2tileX(east, z);
+  const yF0 = lat2tileY(north, z); // haut (nord)
+  const yF1 = lat2tileY(south, z); // bas (sud)
+
+  const txMin = Math.floor(xF0);
+  const txMax = Math.floor(xF1);
+  const tyMin = Math.floor(yF0);
+  const tyMax = Math.floor(yF1);
+
+  const mosaicCanvas = document.createElement('canvas');
+  mosaicCanvas.width = (txMax - txMin + 1) * TILE_SIZE;
+  mosaicCanvas.height = (tyMax - tyMin + 1) * TILE_SIZE;
+  const mctx = mosaicCanvas.getContext('2d');
+
+  const loads = [];
+  for (let tx = txMin; tx <= txMax; tx++) {
+    for (let ty = tyMin; ty <= tyMax; ty++) {
+      loads.push(
+        loadImage(`tiles/ortholittorale/${z}/${tx}/${ty}.jpg`).then((img) => {
+          if (img) mctx.drawImage(img, (tx - txMin) * TILE_SIZE, (ty - tyMin) * TILE_SIZE);
+        })
+      );
+    }
+  }
+  await Promise.all(loads);
+
+  const sx = (xF0 - txMin) * TILE_SIZE;
+  const sxEnd = (xF1 - txMin) * TILE_SIZE;
+  const sy = (yF0 - tyMin) * TILE_SIZE;
+  const syEnd = (yF1 - tyMin) * TILE_SIZE;
+
+  const outCanvas = document.createElement('canvas');
+  outCanvas.width = outputSize;
+  outCanvas.height = outputSize;
+  const octx = outCanvas.getContext('2d');
+  octx.drawImage(mosaicCanvas, sx, sy, sxEnd - sx, syEnd - sy, 0, 0, outputSize, outputSize);
+
+  const texture = new THREE.CanvasTexture(outCanvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+// options: { terrainUrl, center: {lat,lon}, halfExtentM, gridN, notFoundLabel, orthophoto }
 async function initTerrain3D(options) {
-  const { terrainUrl, center, halfExtentM, gridN, notFoundLabel } = options;
+  const { terrainUrl, center, halfExtentM, gridN, notFoundLabel, orthophoto } = options;
   const mPerDegLon = M_PER_DEG_LAT * Math.cos((center.lat * Math.PI) / 180);
 
   const canvas = document.getElementById('scene-canvas');
@@ -123,7 +195,9 @@ async function initTerrain3D(options) {
     return;
   }
 
-  const { mesh, hasData } = buildTerrain(floodData, center, halfExtentM, gridN, mPerDegLon);
+  const orthoTexture = orthophoto ? await buildOrthoTexture(floodData) : null;
+
+  const { mesh, hasData } = buildTerrain(floodData, center, halfExtentM, gridN, mPerDegLon, orthoTexture);
   if (!hasData) {
     showError(`Pas de donnée Litto3D exploitable autour de ${notFoundLabel}.`);
     return;
@@ -184,6 +258,11 @@ async function initTerrain3D(options) {
   loadingEl.hidden = true;
   legendEl.hidden = false;
   waterControlEl.hidden = false;
+  if (orthoTexture) {
+    legendEl.querySelectorAll('.elevation-legend-row').forEach((row) => {
+      row.hidden = true;
+    });
+  }
 
   // Plan d'eau translucide, dont la hauteur peut être ajustée à la main via le
   // curseur (indépendamment de la marée réelle, pour explorer le relief à
