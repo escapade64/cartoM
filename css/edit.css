@@ -183,6 +183,20 @@ body {
   box-shadow: 0 0 2px rgba(0, 0, 0, 0.6);
 }
 
+.cartopy-edit-marker span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
 
 @media (max-width: 700px) {
   .edit-layout {

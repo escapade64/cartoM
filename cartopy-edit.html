@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CartoPy – Édition des données</title>
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
+  <link rel="stylesheet" href="css/edit.css" />
+</head>
+<body>
+  <header class="edit-header">
+    <h1>Édition des données CartoPy</h1>
+    <p>Clique sur un repère de la carte pour l'éditer, ou sur un endroit vide pour en créer un nouveau.</p>
+    <div class="token-settings">
+      <span id="token-status">Jeton GitHub : non configuré</span>
+      <button type="button" id="token-edit-btn">Configurer</button>
+      <button type="button" id="publish-all-btn">💾 Publier tout</button>
+      <span id="publish-all-status"></span>
+    </div>
+  </header>
+
+  <div class="edit-layout">
+    <div id="map"></div>
+    <div class="side-panel">
+      <div id="editor-panel" class="editor-panel"></div>
+    </div>
+  </div>
+
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script type="module" src="js/cartopy-edit.js"></script>
+</body>
+</html>
