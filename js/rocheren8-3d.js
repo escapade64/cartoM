@@ -13,7 +13,7 @@ initTerrain3D({
   halfExtentM: 340,
   gridN: 220,
   notFoundLabel: 'Rocher en 8',
-  orthophoto: true, // essai : photo aérienne projetée sur le relief au lieu de la teinte par élévation
+  orthophoto: true,
 }).catch((err) => {
   console.error(err);
   document.getElementById('scene-loading').hidden = false;

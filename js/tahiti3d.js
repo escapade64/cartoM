@@ -9,6 +9,7 @@ initTerrain3D({
   halfExtentM: 340, // zone de 680 x 680 m (donnée source : 700 x 700 m à 1 m/px)
   gridN: 220,
   notFoundLabel: 'Tahiti Express',
+  orthophoto: true,
 }).catch((err) => {
   console.error(err);
   document.getElementById('scene-loading').hidden = false;
