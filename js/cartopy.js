@@ -65,7 +65,8 @@ for (const point of CARTOPY_POINTS) {
   if (!group) continue;
   const marker = L.marker([point.lat, point.lon], { icon: categoryIcon(point.category) });
   const title = point.name || '(sans nom)';
-  marker.bindPopup(`<strong>${title}</strong>${point.notes ? `<br>${point.notes}` : ''}`);
+  const altitude = Number.isFinite(point.altitude) ? `<br>Altitude : ${point.altitude} m` : '';
+  marker.bindPopup(`<strong>${title}</strong>${altitude}${point.notes ? `<br>${point.notes}` : ''}`);
   marker.addTo(group);
 }
 

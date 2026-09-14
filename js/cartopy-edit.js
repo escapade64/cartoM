@@ -51,12 +51,15 @@ function formatCartopyDataFile(items) {
     .map((item, i) => {
       const name = (item.name || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
       const notes = (item.notes || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-      return `  { id: '${ids[i]}', category: '${item.category}', name: '${name}', lat: ${item.lat}, lon: ${item.lon}, notes: '${notes}' },`;
+      const altitude = Number.isFinite(item.altitude) ? ` altitude: ${item.altitude},` : '';
+      return `  { id: '${ids[i]}', category: '${item.category}', name: '${name}',${altitude} lat: ${item.lat}, lon: ${item.lon}, notes: '${notes}' },`;
     })
     .join('\n');
 
   return `// Données CartoPy : repères pour la randonnée en montagne (Pyrénées).
-// Chaque entrée : { id, category, name, lat, lon, notes }.
+// Chaque entrée : { id, category, name, altitude?, lat, lon, notes }.
+// altitude (m, optionnelle) : récupérée via l'API d'altitude d'Open-Meteo
+// depuis cartopy-edit.html, ou renseignée à la main.
 // category : 'parking' | 'col' | 'sommet' | 'refuge' | 'cabane' | 'priere'.
 // Éditable à la main ou depuis cartopy-edit.html.
 
@@ -66,6 +69,17 @@ ${entries}
 
 export { CARTOPY_POINTS };
 `;
+}
+
+const ELEVATION_API = 'https://api.open-meteo.com/v1/elevation';
+
+async function fetchElevation(lat, lon) {
+  const resp = await fetch(`${ELEVATION_API}?latitude=${lat}&longitude=${lon}`);
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  const data = await resp.json();
+  const value = data.elevation && data.elevation[0];
+  if (typeof value !== 'number') throw new Error('réponse inattendue');
+  return Math.round(value);
 }
 
 function coloredIcon(color, badge) {
@@ -233,6 +247,37 @@ function renderItemForm(item) {
     });
     nodes.push(el('label', { textContent: field.label }, [input]));
   }
+
+  const altInput = el('input', {
+    type: 'number',
+    step: '1',
+    value: Number.isFinite(item.altitude) ? item.altitude : '',
+    placeholder: 'non renseignée',
+  });
+  altInput.addEventListener('change', () => {
+    const v = parseFloat(altInput.value);
+    item.altitude = Number.isFinite(v) ? Math.round(v) : undefined;
+    markDirty();
+  });
+  const altBtn = el('button', { type: 'button', textContent: '📍 Récupérer sur la carte' });
+  altBtn.addEventListener('click', async () => {
+    altBtn.disabled = true;
+    altBtn.textContent = 'Récupération…';
+    try {
+      item.altitude = await fetchElevation(item.lat, item.lon);
+      altInput.value = item.altitude;
+      markDirty();
+    } catch (err) {
+      alert(`Altitude indisponible : ${err.message}`);
+    }
+    altBtn.disabled = false;
+    altBtn.textContent = '📍 Récupérer sur la carte';
+  });
+  nodes.push(
+    el('label', { textContent: 'Altitude (m)' }, [altInput]),
+    el('p', { className: 'hint', textContent: "Estimation SRTM (Open-Meteo) : approximative, surtout sur relief marqué." }),
+    altBtn
+  );
 
   const deleteBtn = el('button', { type: 'button', className: 'delete-btn', textContent: 'Supprimer' });
   deleteBtn.addEventListener('click', () => deleteItem(item));
