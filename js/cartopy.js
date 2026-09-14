@@ -23,11 +23,28 @@ const opentopomap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.pn
   subdomains: 'abc',
   attribution:
     'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, SRTM | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
-}).addTo(map);
+});
 
 const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+});
+
+// Bascule automatique de fond de carte selon le zoom : OpenStreetMap à
+// fort dézoom (rendu OpenTopoMap peu lisible sur une grande étendue),
+// OpenTopoMap à partir d'un zoom "randonnée" (courbes de niveau utiles).
+const BASE_LAYER_SWITCH_ZOOM = 12;
+let currentBase = null;
+function updateBaseLayer() {
+  const wanted = map.getZoom() >= BASE_LAYER_SWITCH_ZOOM ? opentopomap : osm;
+  if (currentBase === wanted) return;
+  if (currentBase) map.removeLayer(currentBase);
+  wanted.addTo(map);
+  currentBase = wanted;
+}
+map.on('zoomend', updateBaseLayer);
+map.on('baselayerchange', (e) => {
+  currentBase = e.layer;
 });
 
 function categoryIcon(category) {
@@ -72,3 +89,4 @@ if (pointsForFit.length > 0) {
 } else {
   map.setView(DEFAULT_CENTER, DEFAULT_ZOOM);
 }
+updateBaseLayer();
