@@ -60,6 +60,7 @@ const CARTOPY_POINTS = [
   { id: 'parking-voie-des-sangliers', category: 'parking', name: 'Parking voie des sangliers', lat: 43.2722592, lon: -1.7959943, notes: '' },
   { id: 'parking-txindoki', category: 'parking', name: 'Parking Txindoki', lat: 43.0353235, lon: -2.0967203, notes: '' },
   { id: 'point', category: 'col', name: 'Col de Soum de Pombie', altitude: 2110, lat: 42.82633697893242, lon: -0.42574179444189847, notes: '' },
+  { id: 'point-2', category: 'refuge', name: 'Refuge de Pombie', altitude: 2023, lat: 42.83546159065615, lon: -0.4269318392221378, notes: '' },
 ];
 
 export { CARTOPY_POINTS };
