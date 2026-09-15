@@ -1,5 +1,8 @@
 // Données CartoPy : repères pour la randonnée en montagne (Pyrénées).
-// Chaque entrée : { id, category, name, lat, lon, notes }.
+// Chaque entrée : { id, category, name, altitude?, lat, lon, notes }.
+// id : stable, ne pas régénérer depuis le nom (référencé par cartopy-segments.js).
+// altitude (m, optionnelle) : récupérée via l'API d'altitude d'Open-Meteo
+// depuis cartopy-edit.html, ou renseignée à la main.
 // category : 'parking' | 'col' | 'sommet' | 'refuge' | 'cabane' | 'priere'.
 // Éditable à la main ou depuis cartopy-edit.html.
 
@@ -56,6 +59,7 @@ const CARTOPY_POINTS = [
   { id: 'parking-du-mendaur', category: 'parking', name: 'Parking du Mendaur', lat: 43.131944, lon: -1.7207029, notes: '' },
   { id: 'parking-voie-des-sangliers', category: 'parking', name: 'Parking voie des sangliers', lat: 43.2722592, lon: -1.7959943, notes: '' },
   { id: 'parking-txindoki', category: 'parking', name: 'Parking Txindoki', lat: 43.0353235, lon: -2.0967203, notes: '' },
+  { id: 'point', category: 'col', name: 'Col de Soum de Pombie', altitude: 2110, lat: 42.82633697893242, lon: -0.42574179444189847, notes: '' },
 ];
 
 export { CARTOPY_POINTS };
