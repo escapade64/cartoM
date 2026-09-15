@@ -4,6 +4,7 @@
 
 import { CARTOPY_POINTS } from './cartopy-data.js';
 import { CATEGORIES, CATEGORY_ORDER } from './cartopy-categories.js';
+import { CARTOPY_SEGMENTS } from './cartopy-segments.js';
 
 const DEFAULT_CENTER = [42.9, -0.3]; // Pyrénées centrales
 const DEFAULT_ZOOM = 9;
@@ -72,6 +73,34 @@ for (const point of CARTOPY_POINTS) {
 
 for (const category of CATEGORY_ORDER) layerGroups[category].addTo(map);
 
+// Segments : liens indicatifs (trait droit) entre deux points, avec distance/dénivelé.
+const pointById = new Map(CARTOPY_POINTS.map((p) => [p.id, p]));
+const segmentsGroup = L.layerGroup();
+for (const seg of CARTOPY_SEGMENTS) {
+  const from = pointById.get(seg.fromId);
+  const to = pointById.get(seg.toId);
+  if (!from || !to) continue;
+  const line = L.polyline(
+    [
+      [from.lat, from.lon],
+      [to.lat, to.lon],
+    ],
+    { color: '#c2410c', weight: 3, opacity: 0.85, dashArray: '8 6' }
+  );
+  const details = [
+    Number.isFinite(seg.distanceKm) ? `${seg.distanceKm} km` : null,
+    Number.isFinite(seg.dPlus) ? `D+ ${seg.dPlus} m` : null,
+    Number.isFinite(seg.dMinus) ? `D- ${seg.dMinus} m` : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+  line.bindPopup(
+    `<strong>${seg.name || '(sans nom)'}</strong><br>${from.name || '?'} → ${to.name || '?'}${details ? `<br>${details}` : ''}${seg.notes ? `<br>${seg.notes}` : ''}`
+  );
+  line.addTo(segmentsGroup);
+}
+segmentsGroup.addTo(map);
+
 const overlays = {};
 for (const category of CATEGORY_ORDER) {
   const cfg = CATEGORIES[category];
@@ -79,6 +108,8 @@ for (const category of CATEGORY_ORDER) {
   overlays[`<span class="legend-swatch" style="background:${cfg.color}"></span>${cfg.label} (${count})`] =
     layerGroups[category];
 }
+overlays[`<span class="legend-swatch" style="background:#c2410c"></span>Segments (${CARTOPY_SEGMENTS.length})`] =
+  segmentsGroup;
 
 L.control
   .layers({ 'Plan topo (OpenTopoMap)': opentopomap, 'Plan (OpenStreetMap)': osm }, overlays)

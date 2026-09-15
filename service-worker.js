@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cartom-shell-v54';
+const CACHE_NAME = 'cartom-shell-v55';
 
 const PRECACHE_URLS = [
   './',
@@ -52,6 +52,7 @@ const NETWORK_FIRST_SUFFIXES = [
   '/js/navlines.js',
   '/data/tidedata.json',
   '/js/cartopy-data.js',
+  '/js/cartopy-segments.js',
 ];
 
 // Cache-first pour les ressources de l'app (même origine, y compris les

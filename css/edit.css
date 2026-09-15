@@ -117,7 +117,8 @@ body {
   font-weight: 600;
 }
 
-.editor-panel input {
+.editor-panel input,
+.editor-panel select {
   font: inherit;
   font-weight: 400;
   padding: 0.4rem;
@@ -127,7 +128,19 @@ body {
   color: inherit;
 }
 
-.editor-panel input:focus {
+.editor-panel select {
+  background: #fff;
+}
+
+@media (prefers-color-scheme: dark) {
+  .editor-panel select {
+    background: #2b2c2e;
+    color: inherit;
+  }
+}
+
+.editor-panel input:focus,
+.editor-panel select:focus {
   outline: 2px solid #1a73e8;
   border-color: transparent;
 }
