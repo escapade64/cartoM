@@ -3,7 +3,7 @@
 // id : stable, ne pas régénérer depuis le nom (référencé par cartopy-segments.js).
 // altitude (m, optionnelle) : récupérée via l'API d'altitude d'Open-Meteo
 // depuis cartopy-edit.html, ou renseignée à la main.
-// category : 'parking' | 'col' | 'sommet' | 'refuge' | 'cabane' | 'priere'.
+// category : 'parking' | 'col' | 'sommet' | 'refuge' | 'cabane' | 'bivouac' | 'priere'.
 // Éditable à la main ou depuis cartopy-edit.html.
 
 const CARTOPY_POINTS = [
@@ -60,6 +60,10 @@ const CARTOPY_POINTS = [
   { id: 'parking-voie-des-sangliers', category: 'parking', name: 'Parking voie des sangliers', lat: 43.2722592, lon: -1.7959943, notes: '' },
   { id: 'parking-txindoki', category: 'parking', name: 'Parking Txindoki', lat: 43.0353235, lon: -2.0967203, notes: '' },
   { id: 'point', category: 'parking', name: 'Bious-Oumettes', altitude: 1310, lat: 42.872764738999656, lon: -0.44859252860531834, notes: 'Parking payant 5 ou 8€ en 2026. Souvent complet à 10h en été. ' },
+  { id: 'point-2', category: 'bivouac', name: 'Mi-montée Lac d\'Aule', altitude: 1715, lat: 42.88023624065257, lon: -0.46310931438709796, notes: 'Pleine vue sur l\'Ossau. En septembre 2026 avec Lorraine, Léopold et Oscar' },
+  { id: 'point-3', category: 'bivouac', name: 'Premier Lac d\'Ayous', altitude: 1845, lat: 42.847552589146275, lon: -0.47734571780043483, notes: '' },
+  { id: 'point-4', category: 'bivouac', name: '2ème Lac d\'Ayous', altitude: 1915, lat: 42.848418142673125, lon: -0.48234653910277375, notes: 'Avec Ernest et Anatole' },
+  { id: 'point-5', category: 'bivouac', name: 'Rhune express', altitude: 335, lat: 43.3301783371863, lon: -1.6325795562172578, notes: 'Avec Oscar en 2026, seul endroit plat dans la montée ' },
 ];
 
 export { CARTOPY_POINTS };
