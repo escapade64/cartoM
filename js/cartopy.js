@@ -5,6 +5,7 @@
 import { CARTOPY_POINTS } from './cartopy-data.js';
 import { CATEGORIES, CATEGORY_ORDER } from './cartopy-categories.js';
 import { CARTOPY_SEGMENTS } from './cartopy-segments.js';
+import { addLocateControl, addWakeLockControl } from './geolocation-controls.js';
 
 const DEFAULT_CENTER = [42.9, -0.3]; // Pyrénées centrales
 const DEFAULT_ZOOM = 9;
@@ -47,6 +48,9 @@ map.on('zoomend', updateBaseLayer);
 map.on('baselayerchange', (e) => {
   currentBase = e.layer;
 });
+
+addWakeLockControl(map);
+addLocateControl(map);
 
 function categoryIcon(category) {
   const cfg = CATEGORIES[category] || { color: '#5f6368', badge: '?' };
