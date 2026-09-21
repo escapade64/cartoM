@@ -3,7 +3,7 @@
 // id : stable, ne pas régénérer depuis le nom (référencé par cartopy-segments.js).
 // altitude (m, optionnelle) : récupérée via l'API d'altitude d'Open-Meteo
 // depuis cartopy-edit.html, ou renseignée à la main.
-// category : 'parking' | 'col' | 'sommet' | 'refuge' | 'cabane' | 'priere'.
+// category : 'parking' | 'col' | 'sommet' | 'refuge' | 'cabane' | 'bivouac' | 'priere'.
 // Éditable à la main ou depuis cartopy-edit.html.
 
 const CARTOPY_POINTS = [
