@@ -64,6 +64,13 @@ const CARTOPY_POINTS = [
   { id: 'point-3', category: 'bivouac', name: 'Premier Lac d\'Ayous', altitude: 1845, lat: 42.847552589146275, lon: -0.47734571780043483, notes: '' },
   { id: 'point-4', category: 'bivouac', name: '2ème Lac d\'Ayous', altitude: 1915, lat: 42.848418142673125, lon: -0.48234653910277375, notes: 'Avec Ernest et Anatole' },
   { id: 'point-5', category: 'bivouac', name: 'Rhune express', altitude: 335, lat: 43.3301783371863, lon: -1.6325795562172578, notes: 'Avec Oscar en 2026, seul endroit plat dans la montée ' },
+  { id: 'point-6', category: 'sommet', name: 'La Rhune', lat: 43.30903732320594, lon: -1.6356633856766716, notes: '' },
+  { id: 'point-7', category: 'bivouac', name: 'Col sur la crête', altitude: 795, lat: 43.274331881734035, lon: -1.3022827269426343, notes: 'Surf and trail en solo' },
+  { id: 'point-8', category: 'bivouac', name: 'Merdanson', altitude: 1390, lat: 43.05561295854032, lon: -0.2949115937142222, notes: 'Avec Sennes un soir de canicule' },
+  { id: 'point-9', category: 'bivouac', name: 'Col de Spandelles', altitude: 1390, lat: 43.015712351416596, lon: -0.21645960111086548, notes: '2 nuits avec Oscar en février 2024 ' },
+  { id: 'point-10', category: 'parking', name: 'Col de Spandelles', altitude: 1380, lat: 43.01125494111195, lon: -0.21860587634792153, notes: '' },
+  { id: 'point-11', category: 'sommet', name: 'Pic de Navaillo', altitude: 1666, lat: 43.00535581511113, lon: -0.22419939488277363, notes: 'Avec Oscar' },
+  { id: 'point-12', category: 'sommet', name: 'Pic de Bazès', altitude: 1804, lat: 42.99635489058379, lon: -0.22839447392721815, notes: 'Avec Grégoire Jacquet ' },
 ];
 
 export { CARTOPY_POINTS };
