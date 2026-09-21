@@ -103,15 +103,41 @@ export { CARTOPY_SEGMENTS };
 `;
 }
 
-const ELEVATION_API = 'https://api.open-meteo.com/v1/elevation';
+// IGN RGE ALTI (1-5 m, LIDAR/photogrammétrie française) : bien plus précis
+// que les modèles globaux, mais ne couvre que le territoire français — les
+// Pyrénées espagnoles/andorranes (ex. Aneto) retombent sur Open-Meteo
+// (Copernicus DEM 90 m, la même source qu'avant, beaucoup moins précise en
+// relief marqué).
+const IGN_ELEVATION_API = 'https://data.geopf.fr/altimetrie/1.0/calcul/alti/rest/elevation.json';
+const OPEN_METEO_ELEVATION_API = 'https://api.open-meteo.com/v1/elevation';
 
-async function fetchElevation(lat, lon) {
-  const resp = await fetch(`${ELEVATION_API}?latitude=${lat}&longitude=${lon}`);
+async function fetchElevationIGN(lat, lon) {
+  const resp = await fetch(`${IGN_ELEVATION_API}?lon=${lon}&lat=${lat}&resource=ign_rge_alti_wld&indent=false`);
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  const data = await resp.json();
+  const z = data.elevations && data.elevations[0] && data.elevations[0].z;
+  if (typeof z !== 'number' || z <= -9999) return null; // hors couverture France
+  return Math.round(z * 10) / 10;
+}
+
+async function fetchElevationOpenMeteo(lat, lon) {
+  const resp = await fetch(`${OPEN_METEO_ELEVATION_API}?latitude=${lat}&longitude=${lon}`);
   if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
   const data = await resp.json();
   const value = data.elevation && data.elevation[0];
   if (typeof value !== 'number') throw new Error('réponse inattendue');
   return Math.round(value);
+}
+
+async function fetchElevation(lat, lon) {
+  try {
+    const ign = await fetchElevationIGN(lat, lon);
+    if (ign !== null) return { value: ign, source: 'IGN RGE ALTI (précis)' };
+  } catch (err) {
+    // IGN indisponible (réseau, hors service...) : on retente avec Open-Meteo.
+  }
+  const value = await fetchElevationOpenMeteo(lat, lon);
+  return { value, source: 'Open-Meteo (estimation, hors France ou IGN indisponible)' };
 }
 
 function coloredIcon(color, badge) {
@@ -375,13 +401,20 @@ function renderItemForm(item) {
     item.altitude = Number.isFinite(v) ? Math.round(v) : undefined;
     markDirty();
   });
+  const altHint = el('p', {
+    className: 'hint',
+    textContent: item.altitudeSource ? `Source : ${item.altitudeSource}` : 'IGN (France) en priorité, Open-Meteo sinon.',
+  });
   const altBtn = el('button', { type: 'button', textContent: '📍 Récupérer sur la carte' });
   altBtn.addEventListener('click', async () => {
     altBtn.disabled = true;
     altBtn.textContent = 'Récupération…';
     try {
-      item.altitude = await fetchElevation(item.lat, item.lon);
-      altInput.value = item.altitude;
+      const { value, source } = await fetchElevation(item.lat, item.lon);
+      item.altitude = value;
+      item.altitudeSource = source;
+      altInput.value = value;
+      altHint.textContent = `Source : ${source}`;
       markDirty();
     } catch (err) {
       alert(`Altitude indisponible : ${err.message}`);
@@ -389,11 +422,7 @@ function renderItemForm(item) {
     altBtn.disabled = false;
     altBtn.textContent = '📍 Récupérer sur la carte';
   });
-  nodes.push(
-    el('label', { textContent: 'Altitude (m)' }, [altInput]),
-    el('p', { className: 'hint', textContent: "Estimation SRTM (Open-Meteo) : approximative, surtout sur relief marqué." }),
-    altBtn
-  );
+  nodes.push(el('label', { textContent: 'Altitude (m)' }, [altInput]), altHint, altBtn);
 
   const deleteBtn = el('button', { type: 'button', className: 'delete-btn', textContent: 'Supprimer' });
   deleteBtn.addEventListener('click', () => deleteItem(item));
