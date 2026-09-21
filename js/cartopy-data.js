@@ -71,6 +71,12 @@ const CARTOPY_POINTS = [
   { id: 'point-10', category: 'parking', name: 'Col de Spandelles', altitude: 1380, lat: 43.01125494111195, lon: -0.21860587634792153, notes: '' },
   { id: 'point-11', category: 'sommet', name: 'Pic de Navaillo', altitude: 1666, lat: 43.00535581511113, lon: -0.22419939488277363, notes: 'Avec Oscar' },
   { id: 'point-12', category: 'sommet', name: 'Pic de Bazès', altitude: 1804, lat: 42.99635489058379, lon: -0.22839447392721815, notes: 'Avec Grégoire Jacquet ' },
+  { id: 'point-13', category: 'bivouac', name: 'Vallon du Larribet', altitude: 1770, lat: 42.86638170260592, lon: -0.2818128406426768, notes: 'Avec Oscar' },
+  { id: 'point-14', category: 'bivouac', name: 'Lac sous la Fache', altitude: 2440, lat: 42.81311585188604, lon: -0.2235020662611676, notes: 'En solo ultra light en route vers la grande Fache un week-end solo à Bordeaux' },
+  { id: 'point-15', category: 'cabane', name: 'Cabane de Chérue', altitude: 1810, lat: 42.869960692580335, lon: -0.4130291931042419, notes: 'Oscar et Ernest en 2026. Paradis des isards' },
+  { id: 'point-16', category: 'bivouac', name: 'Bivouac Pombie', altitude: 2020, lat: 42.836162083496376, lon: -0.4282186441968539, notes: 'Multiples fois dont défi Ascallon en 2025' },
+  { id: 'point-17', category: 'bivouac', name: 'Surplomb Pombie', altitude: 2105, lat: 42.83524331164039, lon: -0.43136110852862514, notes: 'Plus à l\'écart de la foule' },
+  { id: 'point-18', category: 'bivouac', name: 'Lac de Peyreget', altitude: 2230, lat: 42.83330562373262, lon: -0.43648056681831815, notes: 'Juste repéré' },
 ];
 
 export { CARTOPY_POINTS };
