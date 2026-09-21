@@ -5,8 +5,7 @@
 // Éditable à la main ou depuis cartopy-edit.html.
 
 const CARTOPY_SEGMENTS = [
-  { id: 'point', name: 'Montée pombie', fromId: 'pourtalet', toId: 'point', distanceKm: null, dPlus: 700, dMinus: null, notes: '' },
-  { id: 'point-2', name: 'Pombie refuge', fromId: 'point', toId: 'point-2', distanceKm: null, dPlus: null, dMinus: null, notes: '' },
+
 ];
 
 export { CARTOPY_SEGMENTS };
