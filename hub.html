@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Outdoor Planning Center</title>
+  <meta name="description" content="Point d'entrée vers les applications CartoM (Île-de-Bréhat) et CartoPy (Pyrénées)." />
+  <meta name="theme-color" content="#14213d" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/hub.css" />
+</head>
+<body class="hub-body">
+  <header class="app-header">
+    <h1>Outdoor Planning Center</h1>
+    <p class="last-update">Mer &amp; montagne — choisis ton terrain</p>
+  </header>
+
+  <main class="hub">
+    <section class="hub-card hub-card-sea">
+      <div class="hub-card-icon" aria-hidden="true">⛵</div>
+      <h2><a href="index.html">CartoM</a></h2>
+      <p class="hub-card-subtitle">Île-de-Bréhat &amp; le Trégor</p>
+      <p class="hub-card-desc">Passages à marée, mouillages et relief du fond marin en temps réel.</p>
+      <ul class="hub-card-links">
+        <li><a href="index.html">Carte des marées</a></li>
+        <li><a href="planning.html">Planning des marées</a></li>
+        <li><a href="edit.html">Édition des données</a></li>
+      </ul>
+      <p class="hub-card-extra">
+        Vision 3D (test) :
+        <a href="tahiti3d.html">Tahiti Express</a> ·
+        <a href="oscar3d.html">Rocher d'Oscar</a> ·
+        <a href="rocheren8-3d.html">Rocher en 8</a>
+      </p>
+    </section>
+
+    <section class="hub-card hub-card-mountain">
+      <div class="hub-card-icon" aria-hidden="true">⛰️</div>
+      <h2><a href="cartopy.html">CartoPy</a></h2>
+      <p class="hub-card-subtitle">Randonnée en montagne — Pyrénées</p>
+      <p class="hub-card-desc">Parkings, cols, sommets, refuges, cabanes, bivouacs et segments d'itinéraires.</p>
+      <ul class="hub-card-links">
+        <li><a href="cartopy.html">Carte</a></li>
+        <li><a href="cartopy-edit.html">Édition des données</a></li>
+      </ul>
+    </section>
+  </main>
+
+  <p class="hub-footer">CartoM &amp; CartoPy — outils personnels, données ouvertes (SHOM, IGN, OpenStreetMap, Open-Meteo, OpenTopoMap).</p>
+</body>
+</html>

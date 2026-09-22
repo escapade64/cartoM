@@ -1,0 +1,129 @@
+:root {
+  --bg: #14213d;
+  --sea: #0b5566;
+  --mountain: #2e5339;
+  --card-bg: #ffffff;
+  --card-fg: #202124;
+  --card-desc: #5f6368;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --card-bg: #202124;
+    --card-fg: #e8eaed;
+    --card-desc: #b0b3b8;
+  }
+}
+
+.hub-body {
+  height: auto;
+  min-height: 100vh;
+  background: var(--card-bg);
+}
+
+.hub {
+  flex: 0 1 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.2rem;
+  padding: 1.2rem;
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  align-content: start;
+}
+
+.hub-card {
+  background: var(--card-bg);
+  color: var(--card-fg);
+  border-radius: 12px;
+  padding: 1.4rem 1.4rem 1.2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15), 0 1px 12px rgba(0, 0, 0, 0.08);
+  border-top: 5px solid var(--accent, #999);
+}
+
+.hub-card-sea {
+  --accent: var(--sea);
+}
+
+.hub-card-mountain {
+  --accent: var(--mountain);
+}
+
+.hub-card-icon {
+  font-size: 2rem;
+  line-height: 1;
+  margin-bottom: 0.3rem;
+}
+
+.hub-card h2 {
+  margin: 0 0 0.15rem;
+  font-size: 1.3rem;
+}
+
+.hub-card h2 a {
+  color: var(--accent, inherit);
+  text-decoration: none;
+}
+
+.hub-card h2 a:hover,
+.hub-card h2 a:focus-visible {
+  text-decoration: underline;
+}
+
+.hub-card-subtitle {
+  margin: 0 0 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--card-desc);
+}
+
+.hub-card-desc {
+  margin: 0 0 0.9rem;
+  font-size: 0.9rem;
+  color: var(--card-desc);
+}
+
+.hub-card-links {
+  list-style: none;
+  margin: 0 0 0.8rem;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.hub-card-links a {
+  display: inline-block;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  background: var(--accent, #999);
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.hub-card-links a:hover,
+.hub-card-links a:focus-visible {
+  filter: brightness(1.15);
+}
+
+.hub-card-extra {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--card-desc);
+}
+
+.hub-card-extra a {
+  color: var(--accent, inherit);
+}
+
+.hub-footer {
+  flex: 0 0 auto;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--card-desc);
+  padding: 0.5rem 1rem 1.2rem;
+  margin: 0;
+}
