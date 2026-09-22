@@ -1,12 +1,17 @@
-const CACHE_NAME = 'cartom-shell-v55';
+const CACHE_NAME = 'cartom-shell-v56';
 
 const PRECACHE_URLS = [
   './',
   './index.html',
   './planning.html',
+  './hub.html',
+  './cartopy.html',
+  './cartopy-edit.html',
   './manifest.json',
   './css/style.css',
   './css/planning.css',
+  './css/hub.css',
+  './css/cartopy.css',
   './js/app.js',
   './js/planning.js',
   './js/tide.js',
@@ -14,6 +19,13 @@ const PRECACHE_URLS = [
   './js/rocks.js',
   './js/landmarks.js',
   './js/points.js',
+  './js/geolocation-controls.js',
+  './js/flood.js',
+  './js/cartopy.js',
+  './js/cartopy-edit.js',
+  './js/cartopy-categories.js',
+  './js/cartopy-data.js',
+  './js/cartopy-segments.js',
   './data/tidedata.json',
   './vendor/leaflet/leaflet.js',
   './vendor/leaflet/leaflet.css',
