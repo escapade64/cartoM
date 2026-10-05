@@ -78,6 +78,9 @@ const CARTOPY_POINTS = [
   { id: 'point-17', category: 'bivouac', name: 'Surplomb Pombie', altitude: 2105, lat: 42.83524331164039, lon: -0.43136110852862514, notes: 'Plus à l\'écart de la foule' },
   { id: 'point-18', category: 'bivouac', name: 'Lac de Peyreget', altitude: 2230, lat: 42.83330562373262, lon: -0.43648056681831815, notes: 'Juste repéré' },
   { id: 'point-19', category: 'sommet', name: 'Pic du Midi d\'Ossau', altitude: 2884, lat: 42.842972538005334, lon: -0.4381335010258059, notes: '' },
+  { id: 'point-20', category: 'parking', name: 'Béhorléguy Nord', altitude: 1073, lat: 43.10897728424899, lon: -1.0696828972772754, notes: '' },
+  { id: 'point-21', category: 'sommet', name: 'Béhorléguy', altitude: 1265, lat: 43.10576294385675, lon: -1.0731290102191429, notes: 'Œuf en paratonnerre ? ' },
+  { id: 'point-22', category: 'priere', name: 'Croix sous le sommet', altitude: 1254.3, lat: 43.10610771595086, lon: -1.0735797280189252, notes: '' },
 ];
 
 export { CARTOPY_POINTS };
