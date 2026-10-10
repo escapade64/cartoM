@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Mes sorties – Outdoor Planning Center</title>
+  <meta name="description" content="Journal personnel des sorties outdoor (privé, connexion requise)." />
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#14213d" />
+  <!-- Pas de <link rel="manifest"> ni d'icône ici : Vite les ré-emballerait avec des
+       noms hachés. La page reste dans le périmètre (scope) de la PWA installée depuis
+       le hub, qui porte le manifest. -->
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/sorties.css" />
+</head>
+<body class="sorties-body">
+  <header class="app-header">
+    <h1><a href="hub.html">Outdoor Planning Center</a> · Mes sorties</h1>
+    <p class="last-update">Journal privé — visible uniquement après connexion</p>
+  </header>
+
+  <main class="sorties">
+    <section id="setup-view" class="card" hidden>
+      <h2>Configuration requise</h2>
+      <p>L’URL et la clé « anon » de Supabase ne sont pas renseignées dans ce déploiement.
+        Voir <code>supabase/README.md</code> dans le dépôt.</p>
+    </section>
+
+    <section id="login-view" class="card">
+      <h2>Connexion</h2>
+      <form id="login-form">
+        <label for="login-email">Email</label>
+        <input id="login-email" type="email" autocomplete="email" inputmode="email" required />
+        <button id="login-btn" type="submit" class="primary">Recevoir un lien de connexion</button>
+      </form>
+      <form id="code-form" hidden>
+        <label for="login-code">Code à 6 chiffres (si le lien ne s’ouvre pas ici)</label>
+        <input id="login-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" />
+        <button id="code-btn" type="submit">Valider le code</button>
+      </form>
+      <p id="login-msg" class="msg" hidden></p>
+    </section>
+
+    <div id="app-view" hidden>
+      <p class="whoami">Connecté : <span id="user-email"></span>
+        <button id="logout-btn" type="button" class="link-btn">Se déconnecter</button></p>
+
+      <section class="card">
+        <h2>Nouvelle sortie</h2>
+        <form id="outing-form" autocomplete="off">
+          <div class="row">
+            <div class="date">
+              <label for="f-date">Date</label>
+              <input id="f-date" name="date" type="date" required />
+            </div>
+            <div class="grow">
+              <label for="f-title">Titre</label>
+              <input id="f-title" name="title" type="text" required placeholder="Ex. Pic du Midi d’Ossau" />
+            </div>
+          </div>
+
+          <fieldset>
+            <legend>Activités</legend>
+            <div id="activity-chips" class="chips"></div>
+          </fieldset>
+
+          <label for="f-route">Itinéraire <small>(un nom existant ou un nouveau)</small></label>
+          <input id="f-route" name="route" type="text" list="routes-list" />
+          <datalist id="routes-list"></datalist>
+
+          <div class="row">
+            <div>
+              <label for="f-distance">Dist. (km)</label>
+              <input id="f-distance" name="distance" type="text" inputmode="decimal" />
+            </div>
+            <div>
+              <label for="f-gain">D+ (m)</label>
+              <input id="f-gain" name="gain" type="text" inputmode="numeric" />
+            </div>
+            <div>
+              <label for="f-loss">D- (m)</label>
+              <input id="f-loss" name="loss" type="text" inputmode="numeric" />
+            </div>
+            <div>
+              <label for="f-duration">Durée</label>
+              <input id="f-duration" name="duration" type="text" placeholder="1h30" />
+            </div>
+          </div>
+
+          <label for="f-start">Point de départ <small>(parking, port…)</small></label>
+          <input id="f-start" name="start_point" type="text" />
+
+          <label for="f-friends">Avec <small>(noms séparés par des virgules)</small></label>
+          <input id="f-friends" name="friends" type="text" list="friends-list" />
+          <datalist id="friends-list"></datalist>
+
+          <label for="f-notes">Notes</label>
+          <textarea id="f-notes" name="notes" rows="3"></textarea>
+
+          <button id="save-btn" type="submit" class="primary">Enregistrer la sortie</button>
+          <p id="form-msg" class="msg" hidden></p>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Mes sorties <span id="outings-count" class="count"></span></h2>
+        <ul id="outings-list" class="outings"></ul>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="/src/sorties.js"></script>
+</body>
+</html>
