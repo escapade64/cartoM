@@ -215,6 +215,39 @@ button:disabled {
   border-top: 0;
 }
 
+.outing {
+  cursor: pointer;
+  border-radius: 8px;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  margin: 0 -0.5rem;
+}
+
+.outing:hover {
+  background: color-mix(in srgb, var(--card-fg) 5%, transparent);
+}
+
+.outing.is-editing {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.outing:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.hint {
+  margin: -0.4rem 0 0.4rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+#save-btn {
+  margin-right: 0.5rem;
+}
+
 .outing-head {
   display: flex;
   justify-content: space-between;

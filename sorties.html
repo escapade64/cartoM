@@ -46,7 +46,7 @@
         <button id="logout-btn" type="button" class="link-btn">Se déconnecter</button></p>
 
       <section class="card">
-        <h2>Nouvelle sortie</h2>
+        <h2 id="form-title">Nouvelle sortie</h2>
         <form id="outing-form" autocomplete="off">
           <div class="row">
             <div class="date">
@@ -98,12 +98,14 @@
           <textarea id="f-notes" name="notes" rows="3"></textarea>
 
           <button id="save-btn" type="submit" class="primary">Enregistrer la sortie</button>
+          <button id="cancel-btn" type="button" hidden>Annuler la modification</button>
           <p id="form-msg" class="msg" hidden></p>
         </form>
       </section>
 
       <section class="card">
         <h2>Mes sorties <span id="outings-count" class="count"></span></h2>
+        <p class="hint">Touche une sortie pour la modifier.</p>
         <ul id="outings-list" class="outings"></ul>
       </section>
     </div>
