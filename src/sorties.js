@@ -1,4 +1,5 @@
 import { supabase, isConfigured } from './supabase.js';
+import { CARTOPY_POINTS } from '../js/cartopy-data.js';
 
 const ACTIVITIES = [
   'Randonnée',
@@ -200,6 +201,9 @@ function renderActivityChips() {
 function renderDatalists() {
   $('routes-list').innerHTML = state.routes.map((r) => `<option value="${escapeHtml(r.name)}"></option>`).join('');
   $('friends-list').innerHTML = state.friends.map((f) => `<option value="${escapeHtml(f.name)}"></option>`).join('');
+  $('parkings-list').innerHTML = CARTOPY_POINTS.filter((p) => p.category === 'parking')
+    .sort((a, b) => a.name.localeCompare(b.name, 'fr'))
+    .map((p) => `<option value="${escapeHtml(p.name)}"></option>`).join('');
   $('gear-list').innerHTML = state.gear.map((g) => `<option value="${escapeHtml(g.name)}"></option>`).join('');
 }
 

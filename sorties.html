@@ -87,8 +87,9 @@
             </div>
           </div>
 
-          <label for="f-start">Point de départ <small>(parking, port…)</small></label>
-          <input id="f-start" name="start_point" type="text" />
+          <label for="f-start">Point de départ <small>(parkings CartoPy proposés, ou texte libre)</small></label>
+          <input id="f-start" name="start_point" type="text" list="parkings-list" />
+          <datalist id="parkings-list"></datalist>
 
           <label for="f-friends">Avec <small>(noms séparés par des virgules)</small></label>
           <input id="f-friends" name="friends" type="text" list="friends-list" />
