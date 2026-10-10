@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cartom-shell-v56';
+const CACHE_NAME = 'cartom-shell-v57';
 
 const PRECACHE_URLS = [
   './',
@@ -65,6 +65,11 @@ const NETWORK_FIRST_SUFFIXES = [
   '/data/tidedata.json',
   '/js/cartopy-data.js',
   '/js/cartopy-segments.js',
+  // Page "Mes sorties" (construite par Vite) : le HTML référence des fichiers
+  // /assets/*.js hachés qui changent à chaque déploiement, donc toujours la
+  // dernière version en priorité. Les appels à Supabase sont d'une autre origine
+  // et ne passent jamais par ce cache (voir le test d'origine plus bas).
+  '/sorties.html',
 ];
 
 // Cache-first pour les ressources de l'app (même origine, y compris les

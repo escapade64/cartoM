@@ -50,6 +50,10 @@
   --accent: var(--mountain);
 }
 
+.hub-card-log {
+  --accent: #7a4e1d;
+}
+
 .hub-card-icon {
   font-size: 2rem;
   line-height: 1;
