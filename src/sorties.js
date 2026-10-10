@@ -126,31 +126,49 @@ async function loadFriends() {
   return data;
 }
 
+async function loadGear() {
+  const { data, error } = await supabase.from('gear').select('id, name').order('name');
+  if (error) throw error;
+  return data;
+}
+
 // Lectures simples de tables, assemblées côté navigateur (pas de jointures
 // imbriquées PostgREST : plus robuste, et les listes routes/friends sont déjà en mémoire).
 async function loadOutings() {
   const { data: outings, error } = await supabase
     .from('outings')
-    .select('id, outing_date, title, activities, route_id, distance_km, elevation_gain_m, duration_min, notes')
+    .select(
+      'id, outing_date, title, activities, route_id, distance_km, elevation_gain_m, elevation_loss_m, duration_min, start_point, notes'
+    )
     .order('outing_date', { ascending: false })
     .order('created_at', { ascending: false })
     .limit(100);
   if (error) throw error;
   if (!outings.length) return [];
 
-  const { data: links, error: linksError } = await supabase
-    .from('outing_friends')
-    .select('outing_id, friend_id')
-    .in('outing_id', outings.map((o) => o.id));
-  if (linksError) throw linksError;
+  const outingIds = outings.map((o) => o.id);
+  const [friendLinks, gearLinks] = await Promise.all([
+    supabase.from('outing_friends').select('outing_id, friend_id').in('outing_id', outingIds),
+    supabase.from('outing_gear').select('outing_id, gear_id').in('outing_id', outingIds),
+  ]);
+  if (friendLinks.error) throw friendLinks.error;
+  if (gearLinks.error) throw gearLinks.error;
 
   const routeName = new Map(state.routes.map((r) => [r.id, r.name]));
   const friendName = new Map(state.friends.map((f) => [f.id, f.name]));
-  return outings.map((o) => ({
-    ...o,
-    routeName: routeName.get(o.route_id) || null,
-    friendNames: links.filter((l) => l.outing_id === o.id).map((l) => friendName.get(l.friend_id)).filter(Boolean),
-  }));
+  const gearName = new Map(state.gear.map((g) => [g.id, g.name]));
+  return outings.map((o) => {
+    const friendIds = friendLinks.data.filter((l) => l.outing_id === o.id).map((l) => l.friend_id);
+    const gearIds = gearLinks.data.filter((l) => l.outing_id === o.id).map((l) => l.gear_id);
+    return {
+      ...o,
+      routeName: routeName.get(o.route_id) || null,
+      friendIds,
+      friendNames: friendIds.map((id) => friendName.get(id)).filter(Boolean),
+      gearIds,
+      gearNames: gearIds.map((id) => gearName.get(id)).filter(Boolean),
+    };
+  });
 }
 
 // Retrouve (ou crée) une ligne par nom dans une table "routes" / "friends".
@@ -165,7 +183,13 @@ async function getOrCreateByName(table, name, cache) {
 }
 
 // ------------------------------------------------------------------------ vue
-const state = { routes: [], friends: [] };
+const state = {
+  routes: [],
+  friends: [],
+  gear: [],
+  outings: [], // dernière liste affichée (sert à pré-remplir le formulaire d'édition)
+  editing: null, // { id, friendIds, gearIds, extraActivities } quand une sortie est en cours de modification
+};
 
 function renderActivityChips() {
   $('activity-chips').innerHTML = ACTIVITIES.map(
@@ -176,6 +200,7 @@ function renderActivityChips() {
 function renderDatalists() {
   $('routes-list').innerHTML = state.routes.map((r) => `<option value="${escapeHtml(r.name)}"></option>`).join('');
   $('friends-list').innerHTML = state.friends.map((f) => `<option value="${escapeHtml(f.name)}"></option>`).join('');
+  $('gear-list').innerHTML = state.gear.map((g) => `<option value="${escapeHtml(g.name)}"></option>`).join('');
 }
 
 function renderOutings(outings) {
@@ -196,7 +221,9 @@ function renderOutings(outings) {
         .filter(Boolean)
         .join(' · ');
       const friends = o.friendNames || [];
-      return `<li class="outing" data-id="${o.id}">
+      const gear = o.gearNames || [];
+      const editing = state.editing?.id === o.id;
+      return `<li class="outing${editing ? ' is-editing' : ''}" data-id="${o.id}" tabindex="0" aria-label="Modifier la sortie ${escapeHtml(o.title)}">
         <div class="outing-head">
           <strong>${escapeHtml(o.title)}</strong>
           <button type="button" class="link-btn" data-delete="${o.id}" aria-label="Supprimer cette sortie">Supprimer</button>
@@ -205,6 +232,7 @@ function renderOutings(outings) {
         ${o.routeName ? `<div class="outing-meta">Itinéraire : ${escapeHtml(o.routeName)}</div>` : ''}
         ${stats ? `<div class="outing-meta">${escapeHtml(stats)}</div>` : ''}
         ${friends.length ? `<div class="outing-meta">Avec : ${escapeHtml(friends.join(', '))}</div>` : ''}
+        ${gear.length ? `<div class="outing-meta">Matériel : ${escapeHtml(gear.join(', '))}</div>` : ''}
         ${o.notes ? `<div class="outing-notes">${escapeHtml(o.notes)}</div>` : ''}
       </li>`;
     })
@@ -212,65 +240,158 @@ function renderOutings(outings) {
 }
 
 async function refreshOutings() {
-  renderOutings(await loadOutings());
+  state.outings = await loadOutings();
+  renderOutings(state.outings);
 }
 
-async function submitOuting(form) {
+// Noms séparés par des virgules, sans doublon (casse ignorée, première graphie conservée).
+function uniqueNames(value) {
+  const names = [];
+  for (const name of String(value ?? '').split(',').map((s) => s.trim()).filter(Boolean)) {
+    if (!names.some((n) => n.toLowerCase() === name.toLowerCase())) names.push(name);
+  }
+  return names;
+}
+
+// Aligne une table de liaison (outing_friends / outing_gear) sur la nouvelle liste :
+// ne supprime que les liens retirés et n'ajoute que les nouveaux.
+async function syncLinks(table, column, outingId, previousIds, newIds) {
+  const removed = previousIds.filter((id) => !newIds.includes(id));
+  const added = newIds.filter((id) => !previousIds.includes(id));
+  if (removed.length) {
+    const { error } = await supabase.from(table).delete().eq('outing_id', outingId).in(column, removed);
+    if (error) throw error;
+  }
+  if (added.length) {
+    const { error } = await supabase.from(table).insert(added.map((id) => ({ outing_id: outingId, [column]: id })));
+    if (error) throw error;
+  }
+}
+
+// Lit le formulaire ; lève une Error lisible si un champ est invalide.
+function readForm(form) {
   const fd = new FormData(form);
   const title = String(fd.get('title')).trim();
   const date = String(fd.get('date'));
   if (!title) throw new Error('Le titre est obligatoire.');
   if (!date) throw new Error('La date est obligatoire.');
 
-  const activities = fd.getAll('activity').map(String);
-  const routeName = String(fd.get('route')).trim();
-  const friendNames = String(fd.get('friends'))
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean);
-
-  const payload = {
-    outing_date: date,
-    title,
-    activities,
-    distance_km: numberOrNull(fd.get('distance'), 'Distance'),
-    elevation_gain_m: numberOrNull(fd.get('gain'), 'D+'),
-    elevation_loss_m: numberOrNull(fd.get('loss'), 'D-'),
-    duration_min: parseDuration(String(fd.get('duration'))),
-    start_point: String(fd.get('start_point')).trim() || null,
-    notes: String(fd.get('notes')).trim() || null,
+  // En modification, les activités absentes de la liste proposée (ex. saisies
+  // autrement) sont conservées telles quelles au lieu d'être effacées en silence.
+  const activities = [...fd.getAll('activity').map(String), ...(state.editing?.extraActivities || [])];
+  return {
+    routeName: String(fd.get('route')).trim(),
+    friendNames: uniqueNames(fd.get('friends')),
+    gearNames: uniqueNames(fd.get('gear')),
+    payload: {
+      outing_date: date,
+      title,
+      activities,
+      distance_km: numberOrNull(fd.get('distance'), 'Distance'),
+      elevation_gain_m: numberOrNull(fd.get('gain'), 'D+'),
+      elevation_loss_m: numberOrNull(fd.get('loss'), 'D-'),
+      duration_min: parseDuration(String(fd.get('duration'))),
+      start_point: String(fd.get('start_point')).trim() || null,
+      notes: String(fd.get('notes')).trim() || null,
+    },
   };
-  if (routeName) payload.route_id = await getOrCreateByName('routes', routeName, state.routes);
+}
 
-  const { data: outing, error } = await supabase.from('outings').insert(payload).select('id').single();
-  if (error) throw error;
+async function saveOuting(form) {
+  const { routeName, friendNames, gearNames, payload } = readForm(form);
+  // Itinéraire vidé en modification => la sortie est détachée de son itinéraire.
+  payload.route_id = routeName ? await getOrCreateByName('routes', routeName, state.routes) : null;
+  const friendIds = [];
+  for (const name of friendNames) friendIds.push(await getOrCreateByName('friends', name, state.friends));
+  const gearIds = [];
+  for (const name of gearNames) gearIds.push(await getOrCreateByName('gear', name, state.gear));
 
-  if (friendNames.length) {
-    const unique = [...new Set(friendNames.map((n) => n.toLowerCase()))].map((k) => friendNames.find((n) => n.toLowerCase() === k));
-    const friendIds = [];
-    for (const name of unique) friendIds.push(await getOrCreateByName('friends', name, state.friends));
-    const { error: linkError } = await supabase
-      .from('outing_friends')
-      .insert(friendIds.map((friend_id) => ({ outing_id: outing.id, friend_id })));
-    if (linkError) throw linkError;
+  let outingId;
+  let previousFriendIds = [];
+  let previousGearIds = [];
+  if (state.editing) {
+    outingId = state.editing.id;
+    previousFriendIds = state.editing.friendIds;
+    previousGearIds = state.editing.gearIds;
+    const { data, error } = await supabase.from('outings').update(payload).eq('id', outingId).select('id');
+    if (error) throw error;
+    // La sécurité (RLS) renvoie "0 ligne" plutôt qu'une erreur si la sortie n'est plus accessible.
+    if (!data?.length) throw new Error('Sortie introuvable (supprimée depuis un autre appareil ?).');
+  } else {
+    const { data, error } = await supabase.from('outings').insert(payload).select('id').single();
+    if (error) throw error;
+    outingId = data.id;
   }
+
+  await syncLinks('outing_friends', 'friend_id', outingId, previousFriendIds, friendIds);
+  await syncLinks('outing_gear', 'gear_id', outingId, previousGearIds, gearIds);
   renderDatalists();
+}
+
+// ------------------------------------------------------------ mode modification
+function setFormMode(editing) {
+  $('form-title').textContent = editing ? 'Modifier la sortie' : 'Nouvelle sortie';
+  $('save-btn').textContent = editing ? 'Enregistrer les modifications' : 'Enregistrer la sortie';
+  $('cancel-btn').hidden = !editing;
+}
+
+function resetForm(form) {
+  form.reset();
+  form.elements.date.value = todayIso();
+}
+
+function stopEditing(form) {
+  state.editing = null;
+  setFormMode(false);
+  resetForm(form);
+  renderOutings(state.outings);
+}
+
+function startEditing(form, outing) {
+  state.editing = {
+    id: outing.id,
+    friendIds: outing.friendIds || [],
+    gearIds: outing.gearIds || [],
+    extraActivities: (outing.activities || []).filter((a) => !ACTIVITIES.includes(a)),
+  };
+  setFormMode(true);
+  setMessage('form-msg', '');
+  const el = form.elements;
+  el.date.value = outing.outing_date;
+  el.title.value = outing.title;
+  el.route.value = outing.routeName || '';
+  el.distance.value = outing.distance_km ?? '';
+  el.gain.value = outing.elevation_gain_m ?? '';
+  el.loss.value = outing.elevation_loss_m ?? '';
+  el.duration.value = formatDuration(outing.duration_min);
+  el.start_point.value = outing.start_point || '';
+  el.friends.value = (outing.friendNames || []).join(', ');
+  el.gear.value = (outing.gearNames || []).join(', ');
+  el.notes.value = outing.notes || '';
+  form.querySelectorAll('input[name=activity]').forEach((box) => {
+    box.checked = (outing.activities || []).includes(box.value);
+  });
+  renderOutings(state.outings);
+  $('outing-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  el.title.focus({ preventScroll: true });
 }
 
 function initForm() {
   const form = $('outing-form');
   renderActivityChips();
-  form.elements.date.value = todayIso();
+  resetForm(form);
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     setMessage('form-msg', '');
     $('save-btn').disabled = true;
+    const wasEditing = Boolean(state.editing);
     try {
-      await submitOuting(form);
-      form.reset();
-      form.elements.date.value = todayIso();
-      setMessage('form-msg', 'Sortie enregistrée.');
+      await saveOuting(form);
+      state.editing = null;
+      setFormMode(false);
+      resetForm(form);
+      setMessage('form-msg', wasEditing ? 'Sortie modifiée.' : 'Sortie enregistrée.');
       await refreshOutings();
     } catch (err) {
       setMessage('form-msg', err.message || 'Enregistrement impossible.', true);
@@ -279,13 +400,35 @@ function initForm() {
     }
   });
 
-  $('outings-list').addEventListener('click', async (e) => {
-    const id = e.target.closest('[data-delete]')?.dataset.delete;
-    if (!id) return;
-    if (!window.confirm('Supprimer cette sortie ?')) return;
-    const { error } = await supabase.from('outings').delete().eq('id', id);
-    if (error) return setMessage('form-msg', `Suppression impossible : ${error.message}`, true);
-    await refreshOutings();
+  $('cancel-btn').addEventListener('click', () => {
+    setMessage('form-msg', '');
+    stopEditing(form);
+  });
+
+  const list = $('outings-list');
+  list.addEventListener('click', async (e) => {
+    const deleteId = e.target.closest('[data-delete]')?.dataset.delete;
+    if (deleteId) {
+      if (!window.confirm('Supprimer cette sortie ?')) return;
+      const { error } = await supabase.from('outings').delete().eq('id', deleteId);
+      if (error) return setMessage('form-msg', `Suppression impossible : ${error.message}`, true);
+      if (state.editing?.id === deleteId) {
+        state.editing = null;
+        setFormMode(false);
+        resetForm(form);
+      }
+      return refreshOutings();
+    }
+    const id = e.target.closest('.outing')?.dataset.id;
+    const outing = state.outings.find((o) => o.id === id);
+    if (outing) startEditing(form, outing);
+  });
+  // Clavier : Entrée ou Espace sur une sortie ouvre la modification.
+  list.addEventListener('keydown', (e) => {
+    if ((e.key !== 'Enter' && e.key !== ' ') || !e.target.classList.contains('outing')) return;
+    e.preventDefault();
+    const outing = state.outings.find((o) => o.id === e.target.dataset.id);
+    if (outing) startEditing(form, outing);
   });
 }
 
@@ -294,7 +437,7 @@ async function showApp(session) {
   show('app-view', true);
   $('user-email').textContent = session.user.email;
   try {
-    [state.routes, state.friends] = await Promise.all([loadRoutes(), loadFriends()]);
+    [state.routes, state.friends, state.gear] = await Promise.all([loadRoutes(), loadFriends(), loadGear()]);
     renderDatalists();
     await refreshOutings();
   } catch (err) {
