@@ -31,3 +31,20 @@
   margin-right: 0.35rem;
   vertical-align: middle;
 }
+
+.data-banner {
+  padding: 0.5rem 0.9rem;
+  font-size: 0.85rem;
+  background: #fff4d6;
+  color: #5a4300;
+}
+
+.data-banner.is-error {
+  background: #fde8e6;
+  color: #7a1c14;
+}
+
+.data-banner a {
+  color: inherit;
+  font-weight: 600;
+}

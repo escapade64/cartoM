@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cartom-shell-v57';
+const CACHE_NAME = 'cartom-shell-v58';
 
 const PRECACHE_URLS = [
   './',
@@ -24,8 +24,6 @@ const PRECACHE_URLS = [
   './js/cartopy.js',
   './js/cartopy-edit.js',
   './js/cartopy-categories.js',
-  './js/cartopy-data.js',
-  './js/cartopy-segments.js',
   './data/tidedata.json',
   './vendor/leaflet/leaflet.js',
   './vendor/leaflet/leaflet.css',
@@ -63,8 +61,7 @@ const NETWORK_FIRST_SUFFIXES = [
   '/js/landmarks.js',
   '/js/navlines.js',
   '/data/tidedata.json',
-  '/js/cartopy-data.js',
-  '/js/cartopy-segments.js',
+  '/js/places-store.js',
   // Page "Mes sorties" (construite par Vite) : le HTML référence des fichiers
   // /assets/*.js hachés qui changent à chaque déploiement, donc toujours la
   // dernière version en priorité. Les appels à Supabase sont d'une autre origine
