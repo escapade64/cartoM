@@ -2,10 +2,33 @@
 // bases techniques que CartoM (Leaflet, données statiques éditables via une
 // page d'édition dédiée) mais domaine différent : pas de marée ici.
 
-import { CARTOPY_POINTS } from './cartopy-data.js';
+import { loadPlaces } from './places-store.js';
 import { CATEGORIES, CATEGORY_ORDER } from './cartopy-categories.js';
-import { CARTOPY_SEGMENTS } from './cartopy-segments.js';
 import { addLocateControl, addWakeLockControl } from './geolocation-controls.js';
+
+// Les repères viennent de Supabase (connexion requise la première fois), avec une
+// copie locale pour consulter la carte hors ligne. Voir src/places-store.js.
+function showBanner(html, isError) {
+  const el = document.createElement('div');
+  el.className = `data-banner${isError ? ' is-error' : ''}`;
+  el.innerHTML = html;
+  document.querySelector('.app-header').after(el);
+}
+
+let CARTOPY_POINTS = [];
+let CARTOPY_SEGMENTS = [];
+try {
+  const places = await loadPlaces();
+  CARTOPY_POINTS = places.points;
+  CARTOPY_SEGMENTS = places.segments;
+  if (places.source === 'cache') {
+    const d = places.fetchedAt ? new Date(places.fetchedAt).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : '?';
+    showBanner(`Hors ligne — données enregistrées le ${d}.`, false);
+  }
+} catch (err) {
+  const login = err.code === 'auth' ? ' <a href="sorties.html">Se connecter</a>' : '';
+  showBanner(`${err.message}${login}`, true);
+}
 
 const DEFAULT_CENTER = [42.9, -0.3]; // Pyrénées centrales
 const DEFAULT_ZOOM = 9;

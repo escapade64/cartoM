@@ -42,7 +42,14 @@ export default defineConfig({
     rollupOptions: {
       input: {
         sorties: resolve(root, 'sorties.html'),
+        // Module chargé par les pages CartoPy historiques (non compilées) :
+        // nom de sortie stable, voir entryFileNames.
+        'places-store': resolve(root, 'src/places-store.js'),
       },
+      output: {
+        entryFileNames: (chunk) => (chunk.name === 'places-store' ? 'js/places-store.js' : 'assets/[name]-[hash].js'),
+      },
+      preserveEntrySignatures: 'exports-only',
     },
   },
   plugins: [
