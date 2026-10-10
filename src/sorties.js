@@ -126,6 +126,12 @@ async function loadFriends() {
   return data;
 }
 
+async function loadGear() {
+  const { data, error } = await supabase.from('gear').select('id, name').order('name');
+  if (error) throw error;
+  return data;
+}
+
 // Lectures simples de tables, assemblées côté navigateur (pas de jointures
 // imbriquées PostgREST : plus robuste, et les listes routes/friends sont déjà en mémoire).
 async function loadOutings() {
@@ -140,21 +146,27 @@ async function loadOutings() {
   if (error) throw error;
   if (!outings.length) return [];
 
-  const { data: links, error: linksError } = await supabase
-    .from('outing_friends')
-    .select('outing_id, friend_id')
-    .in('outing_id', outings.map((o) => o.id));
-  if (linksError) throw linksError;
+  const outingIds = outings.map((o) => o.id);
+  const [friendLinks, gearLinks] = await Promise.all([
+    supabase.from('outing_friends').select('outing_id, friend_id').in('outing_id', outingIds),
+    supabase.from('outing_gear').select('outing_id, gear_id').in('outing_id', outingIds),
+  ]);
+  if (friendLinks.error) throw friendLinks.error;
+  if (gearLinks.error) throw gearLinks.error;
 
   const routeName = new Map(state.routes.map((r) => [r.id, r.name]));
   const friendName = new Map(state.friends.map((f) => [f.id, f.name]));
+  const gearName = new Map(state.gear.map((g) => [g.id, g.name]));
   return outings.map((o) => {
-    const friendIds = links.filter((l) => l.outing_id === o.id).map((l) => l.friend_id);
+    const friendIds = friendLinks.data.filter((l) => l.outing_id === o.id).map((l) => l.friend_id);
+    const gearIds = gearLinks.data.filter((l) => l.outing_id === o.id).map((l) => l.gear_id);
     return {
       ...o,
       routeName: routeName.get(o.route_id) || null,
       friendIds,
       friendNames: friendIds.map((id) => friendName.get(id)).filter(Boolean),
+      gearIds,
+      gearNames: gearIds.map((id) => gearName.get(id)).filter(Boolean),
     };
   });
 }
@@ -174,8 +186,9 @@ async function getOrCreateByName(table, name, cache) {
 const state = {
   routes: [],
   friends: [],
+  gear: [],
   outings: [], // dernière liste affichée (sert à pré-remplir le formulaire d'édition)
-  editing: null, // { id, friendIds, extraActivities } quand une sortie est en cours de modification
+  editing: null, // { id, friendIds, gearIds, extraActivities } quand une sortie est en cours de modification
 };
 
 function renderActivityChips() {
@@ -187,6 +200,7 @@ function renderActivityChips() {
 function renderDatalists() {
   $('routes-list').innerHTML = state.routes.map((r) => `<option value="${escapeHtml(r.name)}"></option>`).join('');
   $('friends-list').innerHTML = state.friends.map((f) => `<option value="${escapeHtml(f.name)}"></option>`).join('');
+  $('gear-list').innerHTML = state.gear.map((g) => `<option value="${escapeHtml(g.name)}"></option>`).join('');
 }
 
 function renderOutings(outings) {
@@ -207,6 +221,7 @@ function renderOutings(outings) {
         .filter(Boolean)
         .join(' · ');
       const friends = o.friendNames || [];
+      const gear = o.gearNames || [];
       const editing = state.editing?.id === o.id;
       return `<li class="outing${editing ? ' is-editing' : ''}" data-id="${o.id}" tabindex="0" aria-label="Modifier la sortie ${escapeHtml(o.title)}">
         <div class="outing-head">
@@ -217,6 +232,7 @@ function renderOutings(outings) {
         ${o.routeName ? `<div class="outing-meta">Itinéraire : ${escapeHtml(o.routeName)}</div>` : ''}
         ${stats ? `<div class="outing-meta">${escapeHtml(stats)}</div>` : ''}
         ${friends.length ? `<div class="outing-meta">Avec : ${escapeHtml(friends.join(', '))}</div>` : ''}
+        ${gear.length ? `<div class="outing-meta">Matériel : ${escapeHtml(gear.join(', '))}</div>` : ''}
         ${o.notes ? `<div class="outing-notes">${escapeHtml(o.notes)}</div>` : ''}
       </li>`;
     })
@@ -226,6 +242,30 @@ function renderOutings(outings) {
 async function refreshOutings() {
   state.outings = await loadOutings();
   renderOutings(state.outings);
+}
+
+// Noms séparés par des virgules, sans doublon (casse ignorée, première graphie conservée).
+function uniqueNames(value) {
+  const names = [];
+  for (const name of String(value ?? '').split(',').map((s) => s.trim()).filter(Boolean)) {
+    if (!names.some((n) => n.toLowerCase() === name.toLowerCase())) names.push(name);
+  }
+  return names;
+}
+
+// Aligne une table de liaison (outing_friends / outing_gear) sur la nouvelle liste :
+// ne supprime que les liens retirés et n'ajoute que les nouveaux.
+async function syncLinks(table, column, outingId, previousIds, newIds) {
+  const removed = previousIds.filter((id) => !newIds.includes(id));
+  const added = newIds.filter((id) => !previousIds.includes(id));
+  if (removed.length) {
+    const { error } = await supabase.from(table).delete().eq('outing_id', outingId).in(column, removed);
+    if (error) throw error;
+  }
+  if (added.length) {
+    const { error } = await supabase.from(table).insert(added.map((id) => ({ outing_id: outingId, [column]: id })));
+    if (error) throw error;
+  }
 }
 
 // Lit le formulaire ; lève une Error lisible si un champ est invalide.
@@ -239,15 +279,10 @@ function readForm(form) {
   // En modification, les activités absentes de la liste proposée (ex. saisies
   // autrement) sont conservées telles quelles au lieu d'être effacées en silence.
   const activities = [...fd.getAll('activity').map(String), ...(state.editing?.extraActivities || [])];
-  // Noms séparés par des virgules, sans doublon (casse ignorée, première graphie conservée).
-  const friendNames = [];
-  for (const name of String(fd.get('friends')).split(',').map((s) => s.trim()).filter(Boolean)) {
-    if (!friendNames.some((n) => n.toLowerCase() === name.toLowerCase())) friendNames.push(name);
-  }
-
   return {
     routeName: String(fd.get('route')).trim(),
-    friendNames,
+    friendNames: uniqueNames(fd.get('friends')),
+    gearNames: uniqueNames(fd.get('gear')),
     payload: {
       outing_date: date,
       title,
@@ -263,17 +298,21 @@ function readForm(form) {
 }
 
 async function saveOuting(form) {
-  const { routeName, friendNames, payload } = readForm(form);
+  const { routeName, friendNames, gearNames, payload } = readForm(form);
   // Itinéraire vidé en modification => la sortie est détachée de son itinéraire.
   payload.route_id = routeName ? await getOrCreateByName('routes', routeName, state.routes) : null;
   const friendIds = [];
   for (const name of friendNames) friendIds.push(await getOrCreateByName('friends', name, state.friends));
+  const gearIds = [];
+  for (const name of gearNames) gearIds.push(await getOrCreateByName('gear', name, state.gear));
 
   let outingId;
   let previousFriendIds = [];
+  let previousGearIds = [];
   if (state.editing) {
     outingId = state.editing.id;
     previousFriendIds = state.editing.friendIds;
+    previousGearIds = state.editing.gearIds;
     const { data, error } = await supabase.from('outings').update(payload).eq('id', outingId).select('id');
     if (error) throw error;
     // La sécurité (RLS) renvoie "0 ligne" plutôt qu'une erreur si la sortie n'est plus accessible.
@@ -284,16 +323,8 @@ async function saveOuting(form) {
     outingId = data.id;
   }
 
-  const removed = previousFriendIds.filter((id) => !friendIds.includes(id));
-  const added = friendIds.filter((id) => !previousFriendIds.includes(id));
-  if (removed.length) {
-    const { error } = await supabase.from('outing_friends').delete().eq('outing_id', outingId).in('friend_id', removed);
-    if (error) throw error;
-  }
-  if (added.length) {
-    const { error } = await supabase.from('outing_friends').insert(added.map((friend_id) => ({ outing_id: outingId, friend_id })));
-    if (error) throw error;
-  }
+  await syncLinks('outing_friends', 'friend_id', outingId, previousFriendIds, friendIds);
+  await syncLinks('outing_gear', 'gear_id', outingId, previousGearIds, gearIds);
   renderDatalists();
 }
 
@@ -320,6 +351,7 @@ function startEditing(form, outing) {
   state.editing = {
     id: outing.id,
     friendIds: outing.friendIds || [],
+    gearIds: outing.gearIds || [],
     extraActivities: (outing.activities || []).filter((a) => !ACTIVITIES.includes(a)),
   };
   setFormMode(true);
@@ -334,6 +366,7 @@ function startEditing(form, outing) {
   el.duration.value = formatDuration(outing.duration_min);
   el.start_point.value = outing.start_point || '';
   el.friends.value = (outing.friendNames || []).join(', ');
+  el.gear.value = (outing.gearNames || []).join(', ');
   el.notes.value = outing.notes || '';
   form.querySelectorAll('input[name=activity]').forEach((box) => {
     box.checked = (outing.activities || []).includes(box.value);
@@ -404,7 +437,7 @@ async function showApp(session) {
   show('app-view', true);
   $('user-email').textContent = session.user.email;
   try {
-    [state.routes, state.friends] = await Promise.all([loadRoutes(), loadFriends()]);
+    [state.routes, state.friends, state.gear] = await Promise.all([loadRoutes(), loadFriends(), loadGear()]);
     renderDatalists();
     await refreshOutings();
   } catch (err) {
