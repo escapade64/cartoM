@@ -55,6 +55,17 @@ npm run build && npm run preview
 - **Sécurité** : toutes les tables ont la RLS activée avec la règle `user_id = auth.uid()`.
   Si tu ajoutes une table, copier ce schéma de règle.
 
+## Lieux CartoPy dans Supabase
+
+Les repères CartoPy (parkings, cols, sommets…) et leurs segments sont dans les tables
+`places` et `place_segments` ; `js/cartopy-data.js` et `js/cartopy-segments.js` ne sont
+plus utilisés.
+
+1. SQL Editor → coller et lancer `supabase/places.sql` (crée les tables, rejouable).
+2. SQL Editor → coller et lancer `supabase/seed-places.sql` (importe les repères actuels).
+3. Déployer. La carte CartoPy et son éditeur demandent une connexion (même session que
+   « Mes sorties »). La carte garde une copie locale pour le hors ligne ; l'éditeur
+   exige le réseau.
 ## Éviter la mise en pause (projet gratuit)
 
 Supabase met un projet gratuit en pause après ~7 jours sans activité. Lancer

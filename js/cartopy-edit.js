@@ -1,6 +1,21 @@
-import { CARTOPY_POINTS } from './cartopy-data.js';
+import { loadPlaces, savePlaces } from './places-store.js';
 import { CATEGORIES, CATEGORY_ORDER } from './cartopy-categories.js';
-import { CARTOPY_SEGMENTS } from './cartopy-segments.js';
+
+// Les repères sont dans Supabase (connexion requise). L'édition exige le réseau :
+// hors ligne, on ne charge qu'un message (la consultation se fait depuis cartopy.html).
+let CARTOPY_POINTS;
+let CARTOPY_SEGMENTS;
+try {
+  const places = await loadPlaces();
+  if (places.source !== 'online') throw Object.assign(new Error('Hors ligne : l’édition demande une connexion. La consultation reste possible depuis la carte.'), { code: 'offline' });
+  CARTOPY_POINTS = places.points;
+  CARTOPY_SEGMENTS = places.segments;
+} catch (err) {
+  const login = err.code === 'auth' ? ' <a href="sorties.html">Se connecter</a>' : '';
+  document.querySelector('.edit-layout').style.display = 'none';
+  document.querySelector('.token-settings').innerHTML = `<strong>${err.message}</strong>${login}`;
+  throw err; // stoppe ce module : rien d'autre à initialiser
+}
 
 const DEFAULT_CENTER = [42.9, -0.3];
 const DEFAULT_ZOOM = 9;
@@ -13,10 +28,6 @@ function isInPyrenees(p) {
   return p.lat >= PYRENEES_BOUNDS.minLat && p.lat <= PYRENEES_BOUNDS.maxLat && p.lon >= PYRENEES_BOUNDS.minLon && p.lon <= PYRENEES_BOUNDS.maxLon;
 }
 
-const GITHUB_OWNER = 'escapade64';
-const GITHUB_REPO = 'cartoM';
-const GITHUB_BRANCH = 'main';
-const TOKEN_STORAGE_KEY = 'cartom-edit-gh-token'; // partagé avec edit.html (même dépôt, même jeton)
 
 const FIELD_DEFS = [
   { key: 'name', label: 'Nom', type: 'text' },
@@ -48,59 +59,6 @@ function uniqueId(base, existingIds) {
   }
   existingIds.add(id);
   return id;
-}
-
-function formatCartopyDataFile(items) {
-  const entries = items
-    .map((item) => {
-      const name = (item.name || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-      const notes = (item.notes || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-      const altitude = Number.isFinite(item.altitude) ? ` altitude: ${item.altitude},` : '';
-      return `  { id: '${item.id}', category: '${item.category}', name: '${name}',${altitude} lat: ${item.lat}, lon: ${item.lon}, notes: '${notes}' },`;
-    })
-    .join('\n');
-
-  return `// Données CartoPy : repères pour la randonnée en montagne (Pyrénées).
-// Chaque entrée : { id, category, name, altitude?, lat, lon, notes }.
-// id : stable, ne pas régénérer depuis le nom (référencé par cartopy-segments.js).
-// altitude (m, optionnelle) : récupérée via l'API d'altitude d'Open-Meteo
-// depuis cartopy-edit.html, ou renseignée à la main.
-// category : 'parking' | 'col' | 'sommet' | 'refuge' | 'cabane' | 'bivouac' | 'priere'.
-// Éditable à la main ou depuis cartopy-edit.html.
-
-const CARTOPY_POINTS = [
-${entries}
-];
-
-export { CARTOPY_POINTS };
-`;
-}
-
-function formatCartopySegmentsFile(segments) {
-  const entries = segments
-    .map((seg) => {
-      const id = seg.id;
-      const name = (seg.name || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-      const notes = (seg.notes || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-      const distance = Number.isFinite(seg.distanceKm) ? seg.distanceKm : 'null';
-      const dPlus = Number.isFinite(seg.dPlus) ? seg.dPlus : 'null';
-      const dMinus = Number.isFinite(seg.dMinus) ? seg.dMinus : 'null';
-      return `  { id: '${id}', name: '${name}', fromId: '${seg.fromId}', toId: '${seg.toId}', distanceKm: ${distance}, dPlus: ${dPlus}, dMinus: ${dMinus}, notes: '${notes}' },`;
-    })
-    .join('\n');
-
-  return `// Segments CartoPy : relient deux points (voir cartopy-data.js) sans tracé
-// précis, avec les infos connues du terrain (distance, dénivelé).
-// Chaque entrée : { id, name, fromId, toId, distanceKm, dPlus, dMinus, notes }.
-// fromId/toId référencent l'id (stable) d'un point de cartopy-data.js.
-// Éditable à la main ou depuis cartopy-edit.html.
-
-const CARTOPY_SEGMENTS = [
-${entries}
-];
-
-export { CARTOPY_SEGMENTS };
-`;
 }
 
 // IGN RGE ALTI (1-5 m, LIDAR/photogrammétrie française) : bien plus précis
@@ -541,89 +499,33 @@ function renderEditor() {
 
 renderEditor();
 
-// --- Jeton GitHub (stocké uniquement dans ce navigateur) ---
-
-const tokenStatusEl = document.getElementById('token-status');
-const tokenEditBtn = document.getElementById('token-edit-btn');
-
-function getToken() {
-  return localStorage.getItem(TOKEN_STORAGE_KEY) || '';
-}
-
-function updateTokenStatus() {
-  tokenStatusEl.textContent = getToken() ? 'Jeton GitHub : configuré' : 'Jeton GitHub : non configuré';
-}
-
-tokenEditBtn.addEventListener('click', () => {
-  const next = prompt(
-    'Colle ton jeton GitHub (fine-grained, permission "Contents: Read and write" sur ce dépôt uniquement).\n' +
-      'Laisse vide et valide pour l’oublier.',
-    getToken()
-  );
-  if (next === null) return;
-  if (next.trim() === '') {
-    localStorage.removeItem(TOKEN_STORAGE_KEY);
-  } else {
-    localStorage.setItem(TOKEN_STORAGE_KEY, next.trim());
-  }
-  updateTokenStatus();
-});
-
-updateTokenStatus();
-
-// --- Publication directe sur GitHub (API contents) ---
-
-async function publishFile(path, content, message) {
-  const token = getToken();
-  if (!token) {
-    throw new Error('Jeton GitHub non configuré (bouton "Configurer" en haut de la page).');
-  }
-  const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`;
-  const headers = { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' };
-
-  const getResp = await fetch(`${apiUrl}?ref=${GITHUB_BRANCH}`, { headers });
-  if (!getResp.ok) {
-    throw new Error(`Lecture du fichier actuel impossible (HTTP ${getResp.status}).`);
-  }
-  const current = await getResp.json();
-
-  const putResp = await fetch(apiUrl, {
-    method: 'PUT',
-    headers: { ...headers, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      message,
-      content: btoa(unescape(encodeURIComponent(content))),
-      sha: current.sha,
-      branch: GITHUB_BRANCH,
-    }),
-  });
-  if (!putResp.ok) {
-    const err = await putResp.json().catch(() => ({}));
-    throw new Error(err.message || `Échec de la publication (HTTP ${putResp.status}).`);
-  }
-}
+// --- Enregistrement dans Supabase ---
 
 const publishAllBtn = document.getElementById('publish-all-btn');
 const publishAllStatus = document.getElementById('publish-all-status');
 
-const EXPORTERS = {
-  'cartopy-data.js': () => formatCartopyDataFile(cartopyData),
-  'cartopy-segments.js': () => formatCartopySegmentsFile(segmentsData),
-};
+// Ids présents à l'ouverture : seuls ceux-là peuvent être supprimés à l'enregistrement.
+let loadedPointIds = new Set(cartopyData.map((p) => p.id));
+let loadedSegmentIds = new Set(segmentsData.map((s) => s.id));
 
 publishAllBtn.addEventListener('click', async () => {
   publishAllBtn.disabled = true;
-  const results = [];
-  for (const filename of Object.keys(EXPORTERS)) {
-    publishAllStatus.textContent = `Publication de ${filename}…`;
-    try {
-      await publishFile(`js/${filename}`, EXPORTERS[filename](), `Édition ${filename} depuis cartopy-edit.html`);
-      results.push(`${filename} ✓`);
-    } catch (err) {
-      results.push(`${filename} ✗ (${err.message})`);
-    }
+  publishAllStatus.textContent = 'Enregistrement…';
+  try {
+    await savePlaces({ points: cartopyData, segments: segmentsData, loadedPointIds, loadedSegmentIds });
+    loadedPointIds = new Set(cartopyData.map((p) => p.id));
+    loadedSegmentIds = new Set(segmentsData.map((s) => s.id));
+    publishAllStatus.textContent = 'Enregistré ✓';
+    clearDirty();
+  } catch (err) {
+    publishAllStatus.textContent = `Échec : ${err.message || err}`;
   }
-  publishAllStatus.textContent = results.join(' · ');
-  if (results.every((r) => r.includes('✓'))) clearDirty();
   publishAllBtn.disabled = false;
+});
+
+window.addEventListener('beforeunload', (e) => {
+  if (dirty) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
 });

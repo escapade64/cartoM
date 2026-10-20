@@ -1,5 +1,5 @@
 import { supabase, isConfigured } from './supabase.js';
-import { CARTOPY_POINTS } from '../js/cartopy-data.js';
+import { loadPlaces } from './places-store.js';
 
 const ACTIVITIES = [
   'Randonnée',
@@ -188,6 +188,7 @@ const state = {
   routes: [],
   friends: [],
   gear: [],
+  parkings: [], // lieux CartoPy de catégorie parking (propositions pour le point de départ)
   outings: [], // dernière liste affichée (sert à pré-remplir le formulaire d'édition)
   editing: null, // { id, friendIds, gearIds, extraActivities } quand une sortie est en cours de modification
 };
@@ -201,8 +202,7 @@ function renderActivityChips() {
 function renderDatalists() {
   $('routes-list').innerHTML = state.routes.map((r) => `<option value="${escapeHtml(r.name)}"></option>`).join('');
   $('friends-list').innerHTML = state.friends.map((f) => `<option value="${escapeHtml(f.name)}"></option>`).join('');
-  $('parkings-list').innerHTML = CARTOPY_POINTS.filter((p) => p.category === 'parking')
-    .sort((a, b) => a.name.localeCompare(b.name, 'fr'))
+  $('parkings-list').innerHTML = state.parkings
     .map((p) => `<option value="${escapeHtml(p.name)}"></option>`).join('');
   $('gear-list').innerHTML = state.gear.map((g) => `<option value="${escapeHtml(g.name)}"></option>`).join('');
 }
@@ -303,6 +303,9 @@ function readForm(form) {
 
 async function saveOuting(form) {
   const { routeName, friendNames, gearNames, payload } = readForm(form);
+  // Lien vers le lieu CartoPy quand le texte correspond à un parking connu.
+  const startName = (payload.start_point || '').toLowerCase();
+  payload.start_place_id = state.parkings.find((p) => p.name.toLowerCase() === startName)?.id ?? null;
   // Itinéraire vidé en modification => la sortie est détachée de son itinéraire.
   payload.route_id = routeName ? await getOrCreateByName('routes', routeName, state.routes) : null;
   const friendIds = [];
@@ -442,6 +445,10 @@ async function showApp(session) {
   $('user-email').textContent = session.user.email;
   try {
     [state.routes, state.friends, state.gear] = await Promise.all([loadRoutes(), loadFriends(), loadGear()]);
+    // Parkings CartoPy : facultatif, une erreur ici ne bloque pas le journal.
+    state.parkings = await loadPlaces()
+      .then((p) => p.points.filter((x) => x.category === 'parking').sort((a, b) => a.name.localeCompare(b.name, 'fr')))
+      .catch(() => []);
     renderDatalists();
     await refreshOutings();
   } catch (err) {
