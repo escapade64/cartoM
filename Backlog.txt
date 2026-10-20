@@ -1,0 +1,55 @@
+Fichier backlog d'idées pour cartoM
+
+FAIT (09/08/2026) — 2/ En mode navigation : affichage de la hauteur du fond et de la hauteur d'eau sous le bateau
+   Réutilise les données Litto3D (data/flood.json) + marée courante à Bréhat, affiché à
+   côté du point de position GPS en mode suivi, coloré rouge/vert selon le seuil de
+   praticabilité. Rien ne s'affiche hors de la zone relevée. Validé numériquement (écart
+   de 2,6 cm sur zone plate contre la donnée source brute) ; reste à confirmer en
+   conditions réelles la prochaine sortie.
+
+FAIT (09/08/2026) — 6/ En mode navigation : indicateur de direction de déplacement
+   Version simplifiée retenue : plutôt que de faire tourner toute la carte (non
+   supporté nativement par Leaflet), une petite flèche sur le point de position,
+   orientée selon le cap fourni directement par l'API de géolocalisation (pas de
+   calcul entre positions successives). Masquée si le cap est indisponible (à
+   l'arrêt). Reste à confirmer en conditions réelles la prochaine sortie.
+
+À faire, par priorité suggérée :
+
+4/ Trouver un moyen de récupérer les données de marée automatiquement
+   Important pour la fiabilité à long terme : évite la corvée de mise à jour manuelle et
+   le risque d'app périmée (déjà vécu plusieurs fois). À creuser : existence d'une source
+   SHOM programmable, sur le même principe que le WFS RAM trouvé pour l'altimétrie.
+
+5/ Afficher le coefficient de marée du jour
+   Petit effort, calculable directement depuis les données déjà présentes (pas de
+   nouvelle source). Les marins pensent naturellement en coefficient (20-120), c'est
+   souvent plus parlant qu'une hauteur brute en mètres.
+
+7/ Passer en résolution Litto3D à 1m pour les forts niveaux de zoom
+   Bonne idée pour éviter le compromis "tout en 5m ou tout en 1m" : densité de données
+   adaptée au zoom, comme le fait apparemment tidemap.fr (tuiles différentes par niveau
+   de zoom). Complexité modérée : ajouter une deuxième grille (1m) chargée seulement à
+   fort zoom, en plus de la grille 5m existante.
+
+6/ En mode navigation : centrer la carte sur la position et orienter selon le cap du bateau
+   Utile et familier (comme un GPS de voiture), mais Leaflet ne supporte pas nativement
+   la rotation de carte — plugin (Leaflet.Rotate) ou bidouille CSS avec contre-rotation
+   des marqueurs/popups à prévoir. Le cap peut venir de l'API Geolocation (peu fiable à
+   faible vitesse) ou être calculé entre positions GPS successives.
+
+1/ Vision 3D de la surface d'une petite zone à partir des données Litto3D (en mode édition)
+   Plus gros morceau technique : sortir du tout-Leaflet/Canvas2D pour un rendu 3D
+   (Three.js ou équivalent), une techno pas encore présente dans le projet. Intérêt
+   surtout visuel/exploratoire — la couche praticabilité rouge/vert répond déjà à la
+   question "je passe ou pas" de façon plus directe.
+
+3/ En mode test : correction de la hauteur de mer selon pression atmosphérique et vent
+   À scinder en deux :
+   - Pression : effet baromètre inverse (~1cm de hausse par hPa sous 1013), formule
+     simple et fiable, faisable via Open-Meteo (déjà utilisé pour le vent, la pression
+     est dans la même API).
+   - Vent : dépend fortement de la bathymétrie locale et du fetch, pas de formule
+     générique fiable sans modèle hydrodynamique réel — risque de donner une correction
+     trompeuse. À laisser de côté pour cette fonctionnalité précise (le vent reste
+     affiché ailleurs, sur la page planning, juste pas comme correcteur de hauteur d'eau).

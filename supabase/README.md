@@ -66,3 +66,9 @@ plus utilisés.
 3. Déployer. La carte CartoPy et son éditeur demandent une connexion (même session que
    « Mes sorties »). La carte garde une copie locale pour le hors ligne ; l'éditeur
    exige le réseau.
+## Éviter la mise en pause (projet gratuit)
+
+Supabase met un projet gratuit en pause après ~7 jours sans activité. Lancer
+`supabase/keepalive.sql` une fois ; le workflow `keepalive.yml` appelle ensuite
+`public.ping()` deux fois par semaine (lancement manuel possible : onglet Actions).
+Si le projet est déjà en pause : tableau de bord Supabase → « Resume project ».
