@@ -54,3 +54,10 @@ npm run build && npm run preview
   rapatrier sur un autre serveur plus tard.
 - **Sécurité** : toutes les tables ont la RLS activée avec la règle `user_id = auth.uid()`.
   Si tu ajoutes une table, copier ce schéma de règle.
+
+## Éviter la mise en pause (projet gratuit)
+
+Supabase met un projet gratuit en pause après ~7 jours sans activité. Lancer
+`supabase/keepalive.sql` une fois ; le workflow `keepalive.yml` appelle ensuite
+`public.ping()` deux fois par semaine (lancement manuel possible : onglet Actions).
+Si le projet est déjà en pause : tableau de bord Supabase → « Resume project ».
