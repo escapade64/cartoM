@@ -48,3 +48,9 @@
   color: inherit;
   font-weight: 600;
 }
+
+.popup-outings {
+  margin: 0.25rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+}

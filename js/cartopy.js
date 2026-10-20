@@ -2,7 +2,7 @@
 // bases techniques que CartoM (Leaflet, données statiques éditables via une
 // page d'édition dédiée) mais domaine différent : pas de marée ici.
 
-import { loadPlaces } from './places-store.js';
+import { loadPlaces, loadPlaceOutings } from './places-store.js';
 import { CATEGORIES, CATEGORY_ORDER } from './cartopy-categories.js';
 import { addLocateControl, addWakeLockControl } from './geolocation-controls.js';
 
@@ -28,6 +28,26 @@ try {
 } catch (err) {
   const login = err.code === 'auth' ? ' <a href="sorties.html">Se connecter</a>' : '';
   showBanner(`${err.message}${login}`, true);
+}
+
+// Sorties du journal rattachées à un lieu de départ (facultatif, jamais bloquant).
+const outingsByPlace = CARTOPY_POINTS.length ? await loadPlaceOutings() : {};
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+}
+
+function formatDate(iso) {
+  const d = new Date(`${iso}T12:00:00`);
+  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function outingsHtml(placeId) {
+  const list = outingsByPlace[placeId] || [];
+  if (!list.length) return '';
+  const shown = list.slice(0, 8).map((o) => `<li>${escapeHtml(formatDate(o.date))} — ${escapeHtml(o.title)}</li>`).join('');
+  const more = list.length > 8 ? `<li>… et ${list.length - 8} autre(s)</li>` : '';
+  return `<hr><strong>Mes sorties (${list.length})</strong><ul class="popup-outings">${shown}${more}</ul>`;
 }
 
 const DEFAULT_CENTER = [42.9, -0.3]; // Pyrénées centrales
@@ -94,9 +114,18 @@ for (const point of CARTOPY_POINTS) {
   const marker = L.marker([point.lat, point.lon], { icon: categoryIcon(point.category) });
   const title = point.name || '(sans nom)';
   const altitude = Number.isFinite(point.altitude) ? `<br>Altitude : ${point.altitude} m` : '';
-  marker.bindPopup(`<strong>${title}</strong>${altitude}${point.notes ? `<br>${point.notes}` : ''}`);
+  marker.bindPopup(`<strong>${title}</strong>${altitude}${point.notes ? `<br>${point.notes}` : ''}${outingsHtml(point.id)}`);
   marker.addTo(group);
 }
+
+// Couche « Mes sorties » : un anneau autour des lieux d'où une sortie est partie.
+const outingsGroup = L.layerGroup();
+for (const point of CARTOPY_POINTS) {
+  const n = outingsByPlace[point.id]?.length || 0;
+  if (!n) continue;
+  L.circleMarker([point.lat, point.lon], { radius: 17, color: '#d97706', weight: 3, fillOpacity: 0, interactive: false }).addTo(outingsGroup);
+}
+outingsGroup.addTo(map);
 
 for (const category of CATEGORY_ORDER) layerGroups[category].addTo(map);
 
@@ -135,6 +164,8 @@ for (const category of CATEGORY_ORDER) {
   overlays[`<span class="legend-swatch" style="background:${cfg.color}"></span>${cfg.label} (${count})`] =
     layerGroups[category];
 }
+overlays[`<span class="legend-swatch" style="background:#d97706"></span>Mes sorties (${Object.keys(outingsByPlace).filter((id) => pointById.has(id)).length} lieux)`] =
+  outingsGroup;
 overlays[`<span class="legend-swatch" style="background:#c2410c"></span>Segments (${CARTOPY_SEGMENTS.length})`] =
   segmentsGroup;
 

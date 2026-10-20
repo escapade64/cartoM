@@ -4,6 +4,7 @@
 import { supabase, isConfigured } from './supabase.js';
 
 const CACHE_KEY = 'cartom-places-cache-v1';
+const OUTINGS_CACHE_KEY = 'cartom-place-outings-cache-v1';
 const FETCH_TIMEOUT_MS = 6000;
 
 // --- conversion base <-> objets CartoPy ---------------------------------------
@@ -69,6 +70,7 @@ function writeCache(points, segments) {
 export function clearPlacesCache() {
   try {
     localStorage.removeItem(CACHE_KEY);
+    localStorage.removeItem(OUTINGS_CACHE_KEY);
   } catch {
     /* ignore */
   }
@@ -163,4 +165,38 @@ export async function savePlaces({ points, segments, loadedPointIds, loadedSegme
     if (error) throw error;
   }
   writeCache(points, segments);
+}
+
+// Sorties rattachées à un lieu de départ : { [placeId]: [{ id, date, title }] }, plus récentes
+// d'abord. Facultatif : en cas d'échec on renvoie la copie locale, sinon {} (jamais d'erreur).
+export async function loadPlaceOutings() {
+  const readLocal = () => {
+    try {
+      return JSON.parse(localStorage.getItem(OUTINGS_CACHE_KEY) || '{}') || {};
+    } catch {
+      return {};
+    }
+  };
+  if (!isConfigured || navigator.onLine === false) return readLocal();
+  try {
+    const { data, error } = await withTimeout(
+      supabase
+        .from('outings')
+        .select('id, outing_date, title, start_place_id')
+        .not('start_place_id', 'is', null)
+        .order('outing_date', { ascending: false })
+        .limit(1000)
+    );
+    if (error) throw error;
+    const byPlace = {};
+    for (const o of data) (byPlace[o.start_place_id] ||= []).push({ id: o.id, date: o.outing_date, title: o.title });
+    try {
+      localStorage.setItem(OUTINGS_CACHE_KEY, JSON.stringify(byPlace));
+    } catch {
+      /* ignore */
+    }
+    return byPlace;
+  } catch {
+    return readLocal();
+  }
 }
