@@ -1,5 +1,5 @@
 import { supabase, isConfigured } from './supabase.js';
-import { loadPlaces } from './places-store.js';
+import { loadPlaces, isReadOnlyViewer } from './places-store.js';
 
 const ACTIVITIES = [
   'Randonnée',
@@ -188,6 +188,7 @@ const state = {
   routes: [],
   friends: [],
   gear: [],
+  readOnly: false, // compte famille : journal partagé en lecture seule
   parkings: [], // lieux CartoPy de catégorie parking (propositions pour le point de départ)
   outings: [], // dernière liste affichée (sert à pré-remplir le formulaire d'édition)
   editing: null, // { id, friendIds, gearIds, extraActivities } quand une sortie est en cours de modification
@@ -227,10 +228,11 @@ function renderOutings(outings) {
       const friends = o.friendNames || [];
       const gear = o.gearNames || [];
       const editing = state.editing?.id === o.id;
-      return `<li class="outing${editing ? ' is-editing' : ''}" data-id="${o.id}" tabindex="0" aria-label="Modifier la sortie ${escapeHtml(o.title)}">
+      const attrs = state.readOnly ? '' : ` tabindex="0" aria-label="Modifier la sortie ${escapeHtml(o.title)}"`;
+      return `<li class="outing${editing ? ' is-editing' : ''}${state.readOnly ? ' is-readonly' : ''}" data-id="${o.id}"${attrs}>
         <div class="outing-head">
           <strong>${escapeHtml(o.title)}</strong>
-          <button type="button" class="link-btn" data-delete="${o.id}" aria-label="Supprimer cette sortie">Supprimer</button>
+          ${state.readOnly ? '' : `<button type="button" class="link-btn" data-delete="${o.id}" aria-label="Supprimer cette sortie">Supprimer</button>`}
         </div>
         <div class="outing-meta">${escapeHtml(date)}${o.activities?.length ? ` · ${escapeHtml(o.activities.join(', '))}` : ''}</div>
         ${o.routeName ? `<div class="outing-meta">Itinéraire : ${escapeHtml(o.routeName)}</div>` : ''}
@@ -426,13 +428,14 @@ function initForm() {
       }
       return refreshOutings();
     }
+    if (state.readOnly) return;
     const id = e.target.closest('.outing')?.dataset.id;
     const outing = state.outings.find((o) => o.id === id);
     if (outing) startEditing(form, outing);
   });
   // Clavier : Entrée ou Espace sur une sortie ouvre la modification.
   list.addEventListener('keydown', (e) => {
-    if ((e.key !== 'Enter' && e.key !== ' ') || !e.target.classList.contains('outing')) return;
+    if (state.readOnly || (e.key !== 'Enter' && e.key !== ' ') || !e.target.classList.contains('outing')) return;
     e.preventDefault();
     const outing = state.outings.find((o) => o.id === e.target.dataset.id);
     if (outing) startEditing(form, outing);
@@ -444,6 +447,9 @@ async function showApp(session) {
   show('app-view', true);
   $('user-email').textContent = session.user.email;
   try {
+    state.readOnly = await isReadOnlyViewer();
+    $('outing-form').closest('.card').hidden = state.readOnly;
+    $('list-hint').textContent = state.readOnly ? 'Journal partagé en lecture seule.' : 'Touche une sortie pour la modifier.';
     [state.routes, state.friends, state.gear] = await Promise.all([loadRoutes(), loadFriends(), loadGear()]);
     // Parkings CartoPy : facultatif, une erreur ici ne bloque pas le journal.
     state.parkings = await loadPlaces()
