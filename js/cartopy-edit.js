@@ -1,4 +1,4 @@
-import { loadPlaces, savePlaces } from './places-store.js';
+import { loadPlaces, savePlaces, isReadOnlyViewer } from './places-store.js';
 import { CATEGORIES, CATEGORY_ORDER } from './cartopy-categories.js';
 
 // Les repères sont dans Supabase (connexion requise). L'édition exige le réseau :
@@ -8,12 +8,13 @@ let CARTOPY_SEGMENTS;
 try {
   const places = await loadPlaces();
   if (places.source !== 'online') throw Object.assign(new Error('Hors ligne : l’édition demande une connexion. La consultation reste possible depuis la carte.'), { code: 'offline' });
+  if (await isReadOnlyViewer()) throw Object.assign(new Error('Carte partagée en lecture seule : la modification est réservée à son propriétaire.'), { code: 'viewer' });
   CARTOPY_POINTS = places.points;
   CARTOPY_SEGMENTS = places.segments;
 } catch (err) {
   const login = err.code === 'auth' ? ' <a href="sorties.html">Se connecter</a>' : '';
   document.querySelector('.edit-layout').style.display = 'none';
-  document.querySelector('.token-settings').innerHTML = `<strong>${err.message}</strong>${login}`;
+  document.querySelector('.token-settings').innerHTML = `<strong>${err.message}</strong>${login} <a href="cartopy.html">Voir la carte</a>`;
   throw err; // stoppe ce module : rien d'autre à initialiser
 }
 

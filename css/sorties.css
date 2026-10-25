@@ -274,3 +274,11 @@ button:disabled {
 [hidden] {
   display: none !important;
 }
+
+.outing.is-readonly {
+  cursor: default;
+}
+
+.outing.is-readonly:hover {
+  background: none;
+}

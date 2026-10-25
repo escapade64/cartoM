@@ -200,3 +200,19 @@ export async function loadPlaceOutings() {
     return readLocal();
   }
 }
+
+// Compte invité en lecture seule (partage famille, table public.shares) ?
+// Renvoie false si la table n'existe pas encore ou en cas d'erreur.
+export async function isReadOnlyViewer() {
+  if (!isConfigured) return false;
+  try {
+    const { data: { session } } = await withTimeout(supabase.auth.getSession());
+    if (!session) return false;
+    const { data, error } = await withTimeout(
+      supabase.from('shares').select('owner_id').eq('viewer_id', session.user.id).limit(1)
+    );
+    return !error && data.length > 0;
+  } catch {
+    return false;
+  }
+}
