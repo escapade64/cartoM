@@ -1,6 +1,15 @@
 <!doctype html>
 <html lang="fr">
 <head>
+  <script>
+    // Racine du site (sans « index.html ») : on ouvre le hub. L'adresse index.html
+    // explicite reste la carte des marées. Un retour de lien de connexion (jeton dans
+    // l'URL) est renvoyé vers le journal, qui sait le traiter.
+    if (location.pathname.endsWith('/')) {
+      var dest = /access_token|error_description|[?&]code=/.test(location.hash + location.search) ? 'sorties.html' : 'hub.html';
+      location.replace(dest + location.search + location.hash);
+    }
+  </script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>CartoM – Points de passage à marée</title>
@@ -14,7 +23,7 @@
 </head>
 <body>
   <header class="app-header">
-    <h1><a href="planning.html">Keranguilis Live</a> <span id="current-tide"></span></h1>
+    <h1><a class="hub-link" href="hub.html">Hub</a> <a href="planning.html">Keranguilis Live</a> <span id="current-tide"></span></h1>
     <p id="last-update" class="last-update"></p>
   </header>
 
