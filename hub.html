@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Outdoor Planning Center</title>
-  <meta name="description" content="Point d'entrée vers les applications CartoM (Île-de-Bréhat) et CartoPy (Pyrénées)." />
+  <meta name="description" content="Hub des applications outdoor : CartoM (mer), CartoPy (montagne) et le journal des sorties." />
   <meta name="theme-color" content="#14213d" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
@@ -27,14 +27,7 @@
       <ul class="hub-card-links">
         <li><a href="index.html">Carte des marées</a></li>
         <li><a href="planning.html">Planning des marées</a></li>
-        <li><a href="edit.html">Édition des données</a></li>
       </ul>
-      <p class="hub-card-extra">
-        Vision 3D (test) :
-        <a href="tahiti3d.html">Tahiti Express</a> ·
-        <a href="oscar3d.html">Rocher d'Oscar</a> ·
-        <a href="rocheren8-3d.html">Rocher en 8</a>
-      </p>
     </section>
 
     <section class="hub-card hub-card-mountain">
@@ -44,7 +37,6 @@
       <p class="hub-card-desc">Parkings, cols, sommets, refuges, cabanes, bivouacs et segments d'itinéraires.</p>
       <ul class="hub-card-links">
         <li><a href="cartopy.html">Carte</a></li>
-        <li><a href="cartopy-edit.html">Édition des données</a></li>
       </ul>
     </section>
 
@@ -58,6 +50,13 @@
       </ul>
     </section>
   </main>
+
+  <nav class="hub-tools" aria-label="Outils">
+    <p><b>Édition</b>
+      <span><a href="edit.html">CartoM</a> · <a href="cartopy-edit.html">CartoPy</a></span></p>
+    <p><b>Vision 3D (test)</b>
+      <span><a href="tahiti3d.html">Tahiti Express</a> · <a href="oscar3d.html">Rocher d'Oscar</a> · <a href="rocheren8-3d.html">Rocher en 8</a></span></p>
+  </nav>
 
   <p class="hub-footer">CartoM &amp; CartoPy — outils personnels, données ouvertes (SHOM, IGN, OpenStreetMap, Open-Meteo, OpenTopoMap).</p>
 </body>

@@ -1,7 +1,7 @@
 {
-  "name": "CartoM – Points de passage à marée",
-  "short_name": "CartoM Marées",
-  "start_url": "./index.html",
+  "name": "Outdoor Planning Center",
+  "short_name": "Outdoor",
+  "start_url": "./hub.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#0b5566",

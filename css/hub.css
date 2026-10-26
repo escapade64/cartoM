@@ -131,3 +131,26 @@
   padding: 0.5rem 1rem 1.2rem;
   margin: 0;
 }
+
+.hub-tools {
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 1.2rem 0.4rem;
+  font-size: 0.8rem;
+  color: var(--card-desc);
+}
+
+.hub-tools p {
+  display: flex;
+  gap: 0.6rem;
+  margin: 0.3rem 0;
+}
+
+.hub-tools b {
+  flex: 0 0 7.5rem;
+}
+
+.hub-tools a {
+  color: inherit;
+}

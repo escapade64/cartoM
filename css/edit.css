@@ -230,3 +230,28 @@ body {
   .side-panel { border-color: #444; }
   .editor-panel input { border-color: #555; }
 }
+
+/* Lien commun vers le hub, en tête de chaque page */
+.hub-link {
+  display: inline-block;
+  margin-right: 0.45rem;
+  padding: 0.05rem 0.5rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.5;
+  vertical-align: 0.1em;
+  color: inherit;
+  text-decoration: none;
+  opacity: 0.85;
+}
+
+.hub-link:hover,
+.hub-link:focus-visible {
+  opacity: 1;
+}
+
+.token-settings a {
+  color: inherit;
+}
