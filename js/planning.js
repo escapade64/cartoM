@@ -1,5 +1,5 @@
 import { POINTS } from './points.js';
-import { loadTideSeries, statusAt, nextTransitions, dataRangeEndsWithin } from './tide.js';
+import { loadTideSeries, statusAt, nextTransitions, heightAt, nextDataStart } from './tide.js';
 
 const BREHAT_TIDE_SOURCE = 'data/tidedata.json';
 const BOAT_DRAFT_M = 0.3; // même valeur que index.html — tirant d'eau du bateau
@@ -203,11 +203,17 @@ async function init() {
     container.appendChild(buildDayBlock(series, pescadou, windMap, dayStartMs, dayEndMs));
   }
 
-  if (dataRangeEndsWithin(series, Date.now(), 7)) {
-    const lastTs = series[series.length - 1][0];
-    const daysLeft = Math.max(0, Math.round((lastTs - Date.now()) / (24 * 3600 * 1000)));
+  // Trous volontaires entre les périodes saisies : on prévient seulement si la période
+  // affichée n'a aucune donnée, en indiquant la prochaine période couverte.
+  const rangeEnd = now.getTime() + DAYS_AHEAD * 24 * 3600 * 1000;
+  let covered = false;
+  for (let t = now.getTime(); t < rangeEnd && !covered; t += 3600 * 1000) covered = heightAt(series, t) !== null;
+  if (!covered) {
+    const next = nextDataStart(series, Date.now());
     showDataWarning(
-      `⚠ Les données de marée arrivent à échéance dans ${daysLeft} jour(s) — pensez à mettre à jour data/tidedata.json.`
+      next === null
+        ? 'Pas de données de marée sur cette période (aucune période future saisie).'
+        : `Pas de données de marée sur cette période — prochaines données à partir du ${new Date(next).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}.`
     );
   }
 
