@@ -204,10 +204,11 @@ body {
   }
 }
 
-/* Lien commun vers le hub, en tête de chaque page */
+/* Lien commun vers le hub, en haut à droite de chaque page */
 .hub-link {
+  float: right;
   display: inline-block;
-  margin-right: 0.45rem;
+  margin-left: 0.6rem;
   padding: 0.05rem 0.5rem;
   border: 1px solid currentColor;
   border-radius: 999px;
