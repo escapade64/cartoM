@@ -10,8 +10,10 @@ const CATEGORIES = {
   cabane: { label: 'Cabane', color: '#8d5524', badge: 'Ca' },
   bivouac: { label: 'Bivouac', color: '#00838f', badge: 'B' },
   priere: { label: 'Lieu de prière', color: '#7b1fa2', badge: '+' },
+  surf: { label: 'Spot de surf', color: '#0277bd', badge: 'Su' },
+  windsurf: { label: 'Spot de windsurf', color: '#00897b', badge: 'W' },
 };
 
-const CATEGORY_ORDER = ['parking', 'col', 'sommet', 'refuge', 'cabane', 'bivouac', 'priere'];
+const CATEGORY_ORDER = ['parking', 'col', 'sommet', 'refuge', 'cabane', 'bivouac', 'priere', 'surf', 'windsurf'];
 
 export { CATEGORIES, CATEGORY_ORDER };

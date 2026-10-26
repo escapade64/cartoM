@@ -72,3 +72,9 @@ Supabase met un projet gratuit en pause après ~7 jours sans activité. Lancer
 `supabase/keepalive.sql` une fois ; le workflow `keepalive.yml` appelle ensuite
 `public.ping()` deux fois par semaine (lancement manuel possible : onglet Actions).
 Si le projet est déjà en pause : tableau de bord Supabase → « Resume project ».
+
+## Une activité par sortie, spots de surf / windsurf
+
+Lancer `supabase/activity.sql` AVANT de déployer la version du journal qui l'utilise
+(nouvelle colonne `outings.activity`, catégories de lieux `surf` et `windsurf`). Les
+sorties existantes reçoivent leur première activité ; Alpinisme devient Randonnée.

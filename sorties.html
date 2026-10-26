@@ -48,6 +48,11 @@
       <section class="card">
         <h2 id="form-title">Nouvelle sortie</h2>
         <form id="outing-form" autocomplete="off">
+          <fieldset>
+            <legend>Activité</legend>
+            <div id="activity-chips" class="chips"></div>
+          </fieldset>
+
           <div class="row">
             <div class="date">
               <label for="f-date">Date</label>
@@ -59,37 +64,34 @@
             </div>
           </div>
 
-          <fieldset>
-            <legend>Activités</legend>
-            <div id="activity-chips" class="chips"></div>
-          </fieldset>
+          <label for="f-start">Lieu <small>(touche un repère, ou un endroit vide pour créer un lieu)</small></label>
+          <div id="place-map" class="place-map" aria-label="Carte des lieux"></div>
+          <div class="map-tools">
+            <span id="place-selected" class="place-selected"></span>
+            <button id="locate-btn" type="button" class="link-btn">Ma position</button>
+          </div>
+          <div id="new-place" class="new-place" hidden>
+            <div class="row">
+              <div class="grow">
+                <label for="np-name">Nom du nouveau lieu</label>
+                <input id="np-name" type="text" />
+              </div>
+              <div>
+                <label for="np-category">Catégorie</label>
+                <select id="np-category"></select>
+              </div>
+            </div>
+            <button id="np-create" type="button" class="primary">Créer ce lieu</button>
+            <button id="np-cancel" type="button">Annuler</button>
+          </div>
+          <input id="f-start" name="start_point" type="text" list="places-list" placeholder="ou lieu en texte libre" />
+          <datalist id="places-list"></datalist>
+
+          <div id="activity-fields"></div>
 
           <label for="f-route">Itinéraire <small>(un nom existant ou un nouveau)</small></label>
           <input id="f-route" name="route" type="text" list="routes-list" />
           <datalist id="routes-list"></datalist>
-
-          <div class="row">
-            <div>
-              <label for="f-distance">Dist. (km)</label>
-              <input id="f-distance" name="distance" type="text" inputmode="decimal" />
-            </div>
-            <div>
-              <label for="f-gain">D+ (m)</label>
-              <input id="f-gain" name="gain" type="text" inputmode="numeric" />
-            </div>
-            <div>
-              <label for="f-loss">D- (m)</label>
-              <input id="f-loss" name="loss" type="text" inputmode="numeric" />
-            </div>
-            <div>
-              <label for="f-duration">Durée</label>
-              <input id="f-duration" name="duration" type="text" placeholder="1h30" />
-            </div>
-          </div>
-
-          <label for="f-start">Point de départ <small>(parkings CartoPy proposés, ou texte libre)</small></label>
-          <input id="f-start" name="start_point" type="text" list="parkings-list" />
-          <datalist id="parkings-list"></datalist>
 
           <label for="f-friends">Avec <small>(noms séparés par des virgules)</small></label>
           <input id="f-friends" name="friends" type="text" list="friends-list" />
