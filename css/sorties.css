@@ -282,3 +282,75 @@ button:disabled {
 .outing.is-readonly:hover {
   background: none;
 }
+
+/* ---- carte du lieu ---- */
+.place-map {
+  height: 260px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  overflow: hidden;
+  z-index: 0;
+}
+
+.map-tools {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0.35rem 0 0.45rem;
+  font-size: 0.85rem;
+}
+
+.place-selected small {
+  color: var(--muted);
+}
+
+.new-place {
+  margin: 0 0 0.6rem;
+  padding: 0.2rem 0.8rem 0.8rem;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+}
+
+.new-place button {
+  margin-right: 0.5rem;
+}
+
+select {
+  width: 100%;
+  padding: 0.55rem 0.4rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 1rem;
+}
+
+select option {
+  color: #202124;
+}
+
+.cartopy-marker span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  box-sizing: border-box;
+}
+
+.cartopy-marker.is-selected span {
+  border: 3px solid #d97706;
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.35);
+}
+
+.activity-tag {
+  font-weight: 600;
+}
