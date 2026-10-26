@@ -30,6 +30,28 @@ function findSegment(series, t) {
   return -1;
 }
 
+// Deux extrema consécutifs sont espacés d'environ 6 h. Au-delà de ce seuil, c'est un
+// trou volontaire dans les données (périodes non saisies) : pas d'interpolation.
+const MAX_SEGMENT_MS = 9 * 3600 * 1000;
+
+// Index du segment valide contenant t, ou -1 (hors plage ou dans un trou).
+function validSegment(series, t) {
+  const i = findSegment(series, t);
+  if (i === -1 || i === series.length - 1) return -1;
+  return series[i + 1][0] - series[i][0] > MAX_SEGMENT_MS ? -1 : i;
+}
+
+// Début de la prochaine période couverte après t (timestamp ms), ou null s'il n'y en a pas.
+function nextDataStart(series, t) {
+  for (let i = 0; i < series.length - 1; i++) {
+    const [t1] = series[i];
+    const [t2] = series[i + 1];
+    if (t2 <= t || t2 - t1 > MAX_SEGMENT_MS) continue;
+    return Math.max(t1, t);
+  }
+  return null;
+}
+
 // Interpolation en cosinus entre deux extrema consécutifs, approximation standard
 // d'une courbe de marée semi-diurne entre une pleine mer et une basse mer.
 function cosineHeight(t1, h1, t2, h2, t) {
@@ -39,8 +61,8 @@ function cosineHeight(t1, h1, t2, h2, t) {
 
 // Hauteur d'eau à l'instant t (ms epoch). Retourne null si t est hors de la plage de données.
 function heightAt(series, t) {
-  const i = findSegment(series, t);
-  if (i === -1 || i === series.length - 1) return null;
+  const i = validSegment(series, t);
+  if (i === -1) return null;
   const [t1, h1] = series[i];
   const [t2, h2] = series[i + 1];
   return cosineHeight(t1, h1, t2, h2, t);
@@ -50,8 +72,8 @@ function heightAt(series, t) {
 // et prochain extremum (heure + hauteur de la prochaine pleine/basse mer).
 // Retourne des valeurs null si t est hors de la plage de données.
 function tideState(series, t) {
-  const i = findSegment(series, t);
-  if (i === -1 || i === series.length - 1) {
+  const i = validSegment(series, t);
+  if (i === -1) {
     return { height: null, direction: null, nextExtremum: null };
   }
   const [t1, h1] = series[i];
@@ -92,6 +114,7 @@ function nextTransitions(series, t, thresholdMin, count = 2) {
   for (let i = Math.max(startIdx, 0); i < series.length - 1 && results.length < count; i++) {
     const [t1, h1] = series[i];
     const [t2, h2] = series[i + 1];
+    if (t2 - t1 > MAX_SEGMENT_MS) break; // trou dans les données : on s'arrête là
     const crossing = crossingInSegment(t1, h1, t2, h2, thresholdMin);
     if (crossing !== null && crossing > t) {
       results.push({ time: crossing, becomes: h2 > h1 ? 'open' : 'closed' });
@@ -105,4 +128,4 @@ function dataRangeEndsWithin(series, t, days) {
   return lastTs - t < days * 24 * 3600 * 1000;
 }
 
-export { loadTideSeries, heightAt, tideState, statusAt, nextTransitions, dataRangeEndsWithin };
+export { loadTideSeries, heightAt, tideState, statusAt, nextTransitions, dataRangeEndsWithin, nextDataStart };

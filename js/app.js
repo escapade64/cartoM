@@ -2,7 +2,17 @@ import { POINTS } from './points.js';
 import { NAV_LINES } from './navlines.js';
 import { ROCKS } from './rocks.js';
 import { LANDMARKS, DANGER_ZONES } from './landmarks.js';
-import { loadTideSeries, tideState, statusAt, nextTransitions, dataRangeEndsWithin } from './tide.js';
+import { loadTideSeries, tideState, statusAt, nextTransitions, nextDataStart } from './tide.js';
+
+// Message quand il n'y a pas de données de marée pour l'instant consulté (périodes
+// saisies volontairement à la main, avec des trous entre elles).
+function noTideDataMessage(series, t) {
+  const next = nextDataStart(series, t);
+  if (next === null) return 'Pas de données de marée pour aujourd’hui (aucune période future saisie).';
+  const d = new Date(next).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+  return `Pas de données de marée pour aujourd’hui — prochaines données à partir du ${d}.`;
+}
+
 import { loadFloodTestLayer, loadFloodData, sampleElevation, MIN_DEPTH_M } from './flood.js';
 import { addLocateControl, addWakeLockControl } from './geolocation-controls.js';
 
@@ -313,7 +323,6 @@ async function init() {
 
   function refresh() {
     const now = Date.now();
-    let earliestWarningDays = null;
 
     const brehat = tideState(brehatSeries, now);
     const currentTideEl = document.getElementById('current-tide');
@@ -347,21 +356,9 @@ async function init() {
       } else {
         setPointLabel(marker, '');
       }
-
-      if (dataRangeEndsWithin(series, now, 7)) {
-        const lastTs = series[series.length - 1][0];
-        const daysLeft = Math.max(0, Math.round((lastTs - now) / (24 * 3600 * 1000)));
-        if (earliestWarningDays === null || daysLeft < earliestWarningDays) earliestWarningDays = daysLeft;
-      }
     }
 
-    if (earliestWarningDays !== null) {
-      showDataWarning(
-        `⚠ Les données de marée arrivent à échéance dans ${earliestWarningDays} jour(s) — pensez à mettre à jour data/tidedata.json.`
-      );
-    } else {
-      showDataWarning(null);
-    }
+    showDataWarning(brehat.height === null ? noTideDataMessage(brehatSeries, now) : null);
 
     document.getElementById('last-update').textContent = `Dernière mise à jour : ${formatTime(now)}`;
   }
